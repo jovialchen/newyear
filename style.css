@@ -466,3 +466,193 @@ body {
         transform: scale(1.1);
     }
 }
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+    /* 标题区域适配 */
+    #ui-overlay {
+        top: 30%;
+    }
+
+    #main-title {
+        font-size: 2.5rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .festive-text {
+        width: 100%;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .year-number {
+        font-size: 2.5rem;
+    }
+
+    #sub-title {
+        font-size: 1rem;
+        margin-top: 10px;
+        letter-spacing: 1px;
+    }
+
+    /* 家族头像适配 */
+    #family-avatars {
+        top: 58%;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .avatar-name {
+        font-size: 0.9rem;
+    }
+
+    .adult-handwriting {
+        font-size: 1.2rem;
+    }
+
+    .kid-handwriting {
+        font-size: 1rem;
+    }
+
+    /* 音乐按钮适配 */
+    .music-button {
+        font-size: 1.8rem;
+        padding: 10px 20px;
+        bottom: 15px;
+        right: 15px;
+    }
+
+    /* 月亮适配 */
+    .moon {
+        width: 50px;
+        height: 50px;
+        top: 30px;
+        right: 5%;
+    }
+
+    /* 星星适配 */
+    .star {
+        box-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+    }
+
+    .star.winter-triangle {
+        width: 3px;
+        height: 3px;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 0.8);
+    }
+
+    .star.winter-triangle.sirius {
+        width: 4px;
+        height: 4px;
+        box-shadow: 0 0 12px rgba(200, 220, 255, 1), 0 0 20px rgba(200, 220, 255, 0.8);
+    }
+
+    .star.winter-triangle.betelgeuse {
+        box-shadow: 0 0 10px rgba(255, 200, 180, 1), 0 0 18px rgba(255, 200, 180, 0.8);
+    }
+
+    .star.orion {
+        width: 2px;
+        height: 2px;
+    }
+
+    .star.orion.betelgeuse,
+    .star.orion.rigel {
+        width: 3px;
+        height: 3px;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+    }
+
+    .star.canis-minor {
+        width: 2px;
+        height: 2px;
+    }
+
+    .star.canis-minor.procyon {
+        width: 3px;
+        height: 3px;
+        box-shadow: 0 0 8px rgba(255, 255, 220, 1), 0 0 15px rgba(255, 255, 220, 0.8);
+    }
+
+    /* 雪花适配 */
+    .snowflake {
+        font-size: 10px !important;
+    }
+
+    /* 雪地适配 */
+    .snow-ground {
+        height: 40px;
+    }
+}
+
+/* 小屏幕手机适配 */
+@media screen and (max-width: 480px) {
+    #ui-overlay {
+        top: 25%;
+    }
+
+    #main-title {
+        font-size: 2rem;
+    }
+
+    .festive-text {
+        font-size: 1.5rem;
+    }
+
+    .year-number {
+        font-size: 2rem;
+    }
+
+    #sub-title {
+        font-size: 0.85rem;
+    }
+
+    #family-avatars {
+        top: 60%;
+        gap: 15px;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-width: 2px;
+    }
+
+    .avatar-name {
+        font-size: 0.8rem;
+    }
+
+    .adult-handwriting {
+        font-size: 1rem;
+    }
+
+    .kid-handwriting {
+        font-size: 0.85rem;
+    }
+
+    .music-button {
+        font-size: 1.5rem;
+        padding: 8px 15px;
+        bottom: 10px;
+        right: 10px;
+    }
+
+    .moon {
+        width: 40px;
+        height: 40px;
+        top: 20px;
+    }
+
+    /* 减少雪花数量以提升性能 */
+    .snow-ground {
+        height: 30px;
+    }
+}
