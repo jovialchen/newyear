@@ -295,177 +295,14 @@ body {
     }
 }
 
-/* 雪地效果 */
-.snow-ground {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background: linear-gradient(to bottom, 
-        rgba(255, 255, 255, 0.95) 0%, 
-        rgba(255, 255, 255, 1) 50%, 
-        rgba(255, 255, 255, 1) 100%);
-    border-radius: 10px 10px 0 0 / 3px 3px 0 0;
-    z-index: 50;
-    pointer-events: none;
-}
 
-.snow-accumulation {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40px;
-    pointer-events: none;
-}
 
-.settled-snow {
-    position: absolute;
-    color: #fff;
-    text-shadow: 0 0 2px rgba(200, 220, 255, 0.5);
-}
 
-/* 圣诞树样式 */
-.christmas-tree {
-    position: absolute;
-    z-index: 55;
-}
 
-.tree-trunk {
-    width: 30px;
-    height: 50px;
-    background: #5d4037;
-    margin: 0 auto;
-    position: relative;
-    border-radius: 8px;
-}
 
-.tree-layer {
-    position: relative;
-    margin: 0 auto;
-    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #1b5e20 100%);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-}
 
-.tree-layer.layer-1 {
-    width: 80px;
-    height: 60px;
-}
 
-.tree-layer.layer-2 {
-    width: 100px;
-    height: 70px;
-    margin-top: -20px;
-}
 
-.tree-layer.layer-3 {
-    width: 120px;
-    height: 80px;
-    margin-top: -20px;
-}
-
-/* 树上的雪 */
-.tree-snow {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-    z-index: 10;
-}
-
-.tree-snow.top {
-    width: 40px;
-    height: 20px;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-}
-
-.tree-snow.middle {
-    width: 50px;
-    height: 15px;
-    top: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 50%;
-}
-
-.tree-snow.bottom {
-    width: 60px;
-    height: 15px;
-    top: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 50%;
-}
-
-.tree-snow.trunk {
-    width: 120px;
-    height: 12px;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 50%;
-}
-
-/* 树上的彩灯 */
-.tree-light {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    animation: treeGlow 1s infinite alternate;
-}
-
-.tree-light.red {
-    background: #f44336;
-    box-shadow: 0 0 8px #f44336, 0 0 15px #f44336;
-}
-
-.tree-light.green {
-    background: #4caf50;
-    box-shadow: 0 0 8px #4caf50, 0 0 15px #4caf50;
-}
-
-.tree-light.yellow {
-    background: #ffeb3b;
-    box-shadow: 0 0 8px #ffeb3b, 0 0 15px #ffeb3b;
-}
-
-.tree-light.blue {
-    background: #2196f3;
-    box-shadow: 0 0 8px #2196f3, 0 0 15px #2196f3;
-}
-
-/* 彩灯位置 */
-.tree-layer.layer-1 .tree-light:nth-child(1) { top: 30px; left: 30%; }
-.tree-layer.layer-1 .tree-light:nth-child(2) { top: 35px; left: 50%; transform: translateX(-50%); }
-.tree-layer.layer-1 .tree-light:nth-child(3) { top: 30px; left: 70%; }
-
-.tree-layer.layer-2 .tree-light:nth-child(1) { top: 55px; left: 25%; }
-.tree-layer.layer-2 .tree-light:nth-child(2) { top: 60px; left: 42%; }
-.tree-layer.layer-2 .tree-light:nth-child(3) { top: 60px; left: 58%; }
-.tree-layer.layer-2 .tree-light:nth-child(4) { top: 55px; left: 75%; }
-
-.tree-layer.layer-3 .tree-light:nth-child(1) { top: 80px; left: 20%; }
-.tree-layer.layer-3 .tree-light:nth-child(2) { top: 85px; left: 35%; }
-.tree-layer.layer-3 .tree-light:nth-child(3) { top: 85px; left: 50%; transform: translateX(-50%); }
-.tree-layer.layer-3 .tree-light:nth-child(4) { top: 85px; left: 65%; }
-.tree-layer.layer-3 .tree-light:nth-child(5) { top: 80px; left: 80%; }
-.tree-layer.layer-3 .tree-light:nth-child(6) { top: 85px; left: 65%; transform: translateX(-50%); }
-
-@keyframes treeGlow {
-    0% {
-        opacity: 0.5;
-        transform: scale(0.9);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1.1);
-    }
-}
 
 /* 移动端适配 */
 @media screen and (max-width: 768px) {
@@ -605,11 +442,6 @@ body {
     /* 雪花适配 */
     .snowflake {
         font-size: 10px !important;
-    }
-
-    /* 雪地适配 */
-    .snow-ground {
-        height: 40px;
     }
 
     /* 确保canvas正确显示 */
