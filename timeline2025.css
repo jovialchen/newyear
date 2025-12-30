@@ -516,8 +516,73 @@ body {
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    .title {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+
+    .profiles {
+        gap: 12px;
+        margin-bottom: 40px;
+    }
+
+    .avatar {
+        width: 70px;
+        height: 70px;
+        border-width: 3px;
+    }
+
+    .name {
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .timeline {
+        padding-left: 35px;
+    }
+
+    .timeline::before {
+        left: 12px;
+        width: 3px;
+    }
+
+    .month {
+        margin-bottom: 30px;
+    }
+
+    .month-header {
+        font-size: 16px;
+        padding: 6px 15px;
+        left: -50px;
+        border-radius: 20px;
+    }
+
+    .month-header::before {
+        left: -28px;
+        width: 10px;
+        height: 10px;
+        border-width: 3px;
+    }
+
     .compact-events-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .event {
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        border-left-width: 3px;
+    }
+
+    .event.compact {
+        padding: 10px 12px;
     }
 
     .event-header {
@@ -526,7 +591,154 @@ body {
         gap: 8px;
     }
 
+    .event.compact .event-header {
+        gap: 6px;
+    }
+
+    .event-avatars .event-avatar {
+        width: 35px;
+        height: 35px;
+        border-width: 2px;
+        margin-left: -6px;
+    }
+
+    .event.compact .event-avatars .event-avatar {
+        width: 30px;
+        height: 30px;
+        margin-left: -5px;
+    }
+
+    .event-person {
+        font-size: 14px;
+    }
+
+    .event.compact .event-person {
+        font-size: 13px;
+    }
+
     .event-date {
+        font-size: 12px;
         margin-left: 0;
+        margin-top: 4px;
+    }
+
+    .event-title {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+
+    .event.compact .event-title {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .event-description {
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+
+    .event.compact .event-description {
+        font-size: 12px;
+        line-height: 1.4;
+        margin-bottom: 0;
+    }
+
+    .event-photos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .event-photos img {
+        height: 100px;
+        border-radius: 6px;
+    }
+
+    .event-videos {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .event-videos video {
+        height: 180px;
+        border-radius: 6px;
+    }
+
+    .coming-events {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top-width: 2px;
+    }
+
+    .coming-header {
+        font-size: 18px;
+        padding: 8px 20px;
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .container {
+        padding: 10px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .name {
+        font-size: 12px;
+    }
+
+    .timeline {
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        left: 10px;
+    }
+
+    .month-header {
+        font-size: 15px;
+        padding: 5px 12px;
+        left: -45px;
+    }
+
+    .month-header::before {
+        left: -26px;
+        width: 8px;
+        height: 8px;
+    }
+
+    .event {
+        padding: 10px 12px;
+    }
+
+    .event-avatars .event-avatar {
+        width: 30px;
+        height: 30px;
+    }
+
+    .event-title {
+        font-size: 15px;
+    }
+
+    .event-description {
+        font-size: 12px;
+    }
+
+    .event-photos img {
+        height: 90px;
+    }
+
+    .event-videos video {
+        height: 150px;
     }
 }
