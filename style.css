@@ -274,6 +274,46 @@ body {
     font-weight: 700;
 }
 
+/* Timeline链接容器样式 */
+.timeline-links {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 10;
+    opacity: 0;
+    animation: fadeInText 3s forwards 5s;
+    pointer-events: none;
+}
+
+/* Timeline链接样式 */
+.timeline-link {
+    color: rgba(255, 215, 0, 0.9);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 12px 30px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    pointer-events: auto;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.timeline-link:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.9);
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
 /* 雪花样式 */
 .snowflake {
     position: fixed;
@@ -375,6 +415,19 @@ body {
 
     .kid-handwriting {
         font-size: 1.1rem;
+    }
+
+    /* Timeline链接容器适配 */
+    .timeline-links {
+        top: 68%;
+        gap: 12px;
+    }
+
+    /* Timeline链接适配 */
+    .timeline-link {
+        font-size: 0.95rem;
+        padding: 10px 20px;
+        letter-spacing: 0.5px;
     }
 
     /* 音乐按钮适配 */
@@ -518,6 +571,18 @@ body {
 
     .kid-handwriting {
         font-size: 0.95rem;
+    }
+
+    /* Timeline链接容器适配 */
+    .timeline-links {
+        top: 66%;
+        gap: 10px;
+    }
+
+    .timeline-link {
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        letter-spacing: 0.3px;
     }
 
     .music-button {

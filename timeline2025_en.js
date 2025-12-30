@@ -1,64 +1,64 @@
 const events = {
     message: {
         type: 'message',
-        title: '写给远方的朋友',
+        title: 'To My Faraway Friend',
         content: `
-            <p>亲爱的朋友，</p>
-            <p>好久不见啦！说真的，虽然咱们隔得远，平时也各忙各的，但每次静下来，总会想起你们。所以特意整理了这些零零碎碎，想着就算不能天天见面，也能用这种方式，让你们看看我最近的日子是啥模样。</p>   
-            <p>平时聊天不多，但是我一直有想起你哦。特别感谢你，居然花了这么长时间一直读到这里，好像咱们又坐在了一块儿，慢慢聊着天。</p>
-            <p>新年就要到啦，祝你新年快乐，平平安安的，每天都有点小确幸。</p>
+            <p>Dear friend,</p>
+            <p>It's been a while! Honestly, even though we're far apart and busy with our own lives, every time I quiet down, I think of you. So I put together these bits and pieces, thinking that even if we can't meet every day, I can at least let you see what my recent days look like through this.</p>   
+            <p>We don't chat much, but I always think of you. I'm especially grateful that you took the time to read all the way here—it feels like we're sitting together again, chatting slowly.</p>
+            <p>New Year is coming! I wish you a happy New Year, peace and safety, and little joys every day.</p>
 
-            <p class="signature">—— Joyce</p>
+            <p class="signature">— Joyce</p>
         `
     },
     1: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-01-01 - 2025-01-03',
-            title: '元旦假期',
-            description: '全家一起去了即墨古城，并没有很好玩，但是在服装批发市场买到了质量很好又极度便宜的衣服。',
+            title: 'New Year Holiday',
+            description: 'The whole family went to Jimo Ancient City. It wasn\'t very fun, but we bought really high-quality and extremely cheap clothes at the clothing wholesale market.',
             category: 'play',
             locations: [
-                { name: '即墨古城', lat: 36.3856, lng: 120.4471 },
-                { name: '即墨服装市场', lat: 36.3996, lng: 120.4609 }
+                { name: 'Jimo Ancient City', lat: 36.3856, lng: 120.4471 },
+                { name: 'Jimo Clothing Market', lat: 36.3996, lng: 120.4609 }
             ],
             photos: ["2025_01_jimo.jpg"]
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-01-30',
-            title: '琅玡台',
-            description: '冒着寒风去了一趟琅玡台，这地方和以前风景一样，但是以前没有这么冷。',
+            title: 'Langyatai',
+            description: 'Braved the cold wind to visit Langyatai. The scenery is the same as before, but it wasn\'t this cold back then.',
             category: 'play',
             locations: [
-                { name: '青岛琅玡台', lat: 35.6456, lng: 119.8801 },
+                { name: 'Qingdao Langyatai', lat: 35.6456, lng: 119.8801 },
             ],
             photos: ["2025_01_langyatai.jpg","2025_01_langyatai2.jpg"]
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-01-01 - 2025-01-30',
-            title: '一张特别划算的游玩票',
-            description: '因为买了海底世界和轮船的冬季票，整个冬天的周末要么在逛水族馆，要么坐船吹海风。',
+            title: 'A Great Value Combo Ticket',
+            description: 'Because we bought winter tickets for the Underwater World and ship cruises, every weekend of the winter was spent either at the aquarium or taking boat rides in the sea breeze.',
             category: 'play',
             locations: [
-                { name: '青岛水族馆', lat: 36.0532, lng: 120.3224 },
-                { name: '青岛奥帆中心', lat: 36.0499, lng: 120.4036 }
+                { name: 'Qingdao Aquarium', lat: 36.0532, lng: 120.3224 },
+                { name: 'Qingdao Olympic Sailing Center', lat: 36.0499, lng: 120.4036 }
             ],
             photos: ["2025_01_aquarium.jpg", "2025_01_aquarium2.jpg"]
         }
@@ -66,34 +66,34 @@ const events = {
     2: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-02-16',
-            title: '摩天大楼里的观景台',
-            description: '觉得风景好美，于是花了很多钱拍照，结果小伙子们都吓得瑟瑟发抖。',
+            title: 'Observation Deck in a Skyscraper',
+            description: 'Thought the view was beautiful, so spent a lot of money on photos. The result was that the little guys were trembling with fear.',
             category: 'play',
             locations: [
-                { name: '青岛云上海天', lat: 36.0539, lng: 120.3114 },
+                { name: 'Qingdao Haitian Center', lat: 36.0539, lng: 120.3114 },
             ],
             photos: ["2025_02_haitian.jpg", "2025_02_haitian2.jpg"]
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-02-01 - 2025-02-28',
-            title: '中山公园和动物园',
-            description: '小朋友们喜欢看小动物，我们就经常去看小动物，8.5元一张门票也太划算了。',
+            title: 'Zhongshan Park and Zoo',
+            description: 'The kids like seeing small animals, so we often go to see them. 8.5 yuan per ticket is such a bargain.',
             category: 'play',
             locations: [
-                { name: '青岛中山公园', lat: 36.0564, lng: 120.3490 },
-                { name: '青岛动物园', lat: 36.0623, lng: 120.3518 }
+                { name: 'Qingdao Zhongshan Park', lat: 36.0564, lng: 120.3490 },
+                { name: 'Qingdao Zoo', lat: 36.0623, lng: 120.3518 }
             ],
             photos: ["2025_02_zhongshan.jpg"]
         }
@@ -101,23 +101,23 @@ const events = {
     3: [
         {
             persons: [
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
             ],
             date: '2025-03-01',
-            title: '幼儿园小班的陈贝塔',
-            description: '刚满两岁半的陈贝塔上了幼儿园，每天都很懵。',
+            title: 'Chen Beita in Kindergarten Small Class',
+            description: 'Chen Beita, just turned two and a half, started kindergarten and is confused every day.',
             category: 'work',
             photos: ['2025_03_beitaK.jpg',"2025_03_beitaK2.jpg"]
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-03-08',
-            title: '庆祝妇女节',
-            description: '参加幼儿园组织的妇女节活动（？），和小朋友一起做手工，玩得开心。',
+            title: 'Celebrating Women\'s Day',
+            description: 'Participated in the Women\'s Day activity organized by the kindergarten (?), did crafts with the kids, and had fun.',
             category: 'love',
             photos: [
                 '2025_03_womensday.jpg',
@@ -125,11 +125,11 @@ const events = {
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
             ],
             date: '2025-03-16',
-            title: '升旗手陈皮皮',
-            description: '陈皮皮好不容易当了升旗手， 结果因为妈妈给穿了太多的衣服， 把帅气的旗手服撑得好难看。',
+            title: 'Flag Raiser Chen Pipi',
+            description: 'Chen Pipi finally became a flag raiser. But because Mom dressed him in too many clothes, the handsome flag bearer uniform was stretched to look terrible.',
             category: 'work',
             photos: ['2025_03_pipi.jpg']
         },
@@ -138,24 +138,24 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-03-29',
-            title: '庆祝春分的聚会',
-            description: '一年一度的春饼节，去姐妹家里吃了这辈子吃过的最好吃的春饼炸鸡凉拌藕，并且自己动手实践从热气腾腾锅里揪出了一张煎饼。',
+            title: 'Spring Equinox Gathering',
+            description: 'The annual Spring Pancake Festival. Went to a friend\'s house and ate the best spring pancakes, fried chicken, and cold lotus root in my life. Also亲手实践从热气腾腾锅里揪出了一张煎饼.',
             category: 'love',
             photos: ['2025_03_春分.jpg']
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-03-01 - 2025-03-31',
-            title: '春天就适合玩滑梯',
-            description: '所以我们都在浮山玩滑梯。',
+            title: 'Spring is for Slides',
+            description: 'So we all played on slides at Fushan.',
             category: 'play',
             locations: [
-                { name: '青岛浮山森林公园', lat: 36.1000, lng: 120.4036 },
+                { name: 'Qingdao Fushan Forest Park', lat: 36.1000, lng: 120.4036 },
             ],
             photos: ["2025_03_浮山.jpg"]
         }
@@ -163,17 +163,17 @@ const events = {
     4: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-04-05',
-            title: '假期哪里有人少的地方',
-            description: '春暖花开， 不出去玩实在不划算， 出去玩又觉得到处的游客都太多了很麻烦，看到胶州的旅馆没有涨价就以为人不会太多，太天真了！',
+            title: 'Where to Go During Holiday with Fewer People',
+            description: 'Spring has arrived and flowers are blooming. Not going out to play is a waste, but going out feels like there are too many tourists everywhere which is troublesome. Saw that hotels in Jiaozhou didn\'t raise prices and thought there wouldn\'t be too many people—too naive!',
             category: 'love',
             locations: [
-                { name: '青岛少海国家湿地公园', lat: 36.2653, lng: 120.0944 },
+                { name: 'Qingdao Shaohai National Wetland Park', lat: 36.2653, lng: 120.0944 },
             ],
             photos: ["2025_04_胶州.jpg"]
         }
@@ -181,20 +181,20 @@ const events = {
     5: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-05-01 - 2025-05-31',
-            title: '五月的主题是挖沙',
-            description: '每个周末都在挖沙',
+            title: 'May Theme: Digging Sand',
+            description: 'Digging sand every weekend.',
             category: 'health',
             locations: [
-                { name: '青岛石老人沙滩', lat: 36.0612, lng: 120.4713 },
-                { name: '青岛沙子口沙滩', lat: 36.1350, lng: 120.5389 },
-                { name: '青岛八大关沙滩', lat: 36.0589, lng: 120.3289 },
-                { name: '青岛仰口沙滩', lat: 36.2039, lng: 120.6489 }
+                { name: 'Qingdao Shilaoren Beach', lat: 36.0612, lng: 120.4713 },
+                { name: 'Qingdao Shazikou Beach', lat: 36.1350, lng: 120.5389 },
+                { name: 'Qingdao Baguanguan Beach', lat: 36.0589, lng: 120.3289 },
+                { name: 'Qingdao Yangkou Beach', lat: 36.2039, lng: 120.6489 }
             ],
             photos: ["2025_05_挖沙.jpg"]
         }
@@ -202,26 +202,26 @@ const events = {
     6: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
             ],
             date: '2025-06-10',
-            title: '皮皮的第一次音乐会演出',
-            description: '皮崽的第一次音乐会演出，因为精彩的报幕得到了阵阵掌声和欢呼！',
+            title: 'Pipi\'s First Concert Performance',
+            description: 'Pipi\'s first concert performance! Received bursts of applause and cheers for the wonderful introduction!',
             category: 'work',
             photos: ["2025_06_音乐会.jpg"],
             locations: [
-                { name: '青岛臻传音乐', lat: 36.0659, lng: 120.3844 },
+                { name: 'Qingdao Zhenchuan Music', lat: 36.0659, lng: 120.3844 },
             ],
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
             ],
             date: '2025-06-15',
-            title: '皮皮会跳绳了',
-            description: '太棒了！',
+            title: 'Pipi Learned to Jump Rope',
+            description: 'Awesome!',
             category: 'health',
             photos: []
         },
@@ -230,8 +230,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-06-01 - 2025-06-30',
-            title: '短暂尝试了Kpop',
-            description: '因为过于笨拙而放弃了。',
+            title: 'Briefly Tried K-pop',
+            description: 'Gave up because of being too clumsy.',
             category: 'health',
             photos: []
         },
@@ -240,49 +240,49 @@ const events = {
     7: [
         {
             persons: [
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '皮皮', avatar: 'profile-pipi.jpg' }
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' }
             ],
             date: '2025-07-06',
-            title: '最好的盆友来找我玩',
-            description: '我的闺蜜带者全家来找我玩，开心！',
+            title: 'Best Friend Came to Visit',
+            description: 'My best friend brought her whole family to visit me—so happy!',
             category: 'love',
             locations: [
-                { name: '青岛极地海洋世界', lat: 36.0547, lng: 120.4658 },
-                { name: '青岛海天中心', lat: 36.0524, lng: 120.3227 },
-                { name: '青岛万象汇', lat: 36.0981, lng: 120.4148 }
+                { name: 'Qingdao Polar Ocean World', lat: 36.0547, lng: 120.4658 },
+                { name: 'Qingdao Haitian Center', lat: 36.0524, lng: 120.3227 },
+                { name: 'Qingdao Wanxianghui', lat: 36.0981, lng: 120.4148 }
             ],
             photos: ["2025_07_xinxin.jpg"]
         },
         {
             persons: [
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '皮皮', avatar: 'profile-pipi.jpg' }
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' }
             ],
             date: '2025-07-13 - 2025-07-31',
-            title: '又开始逛水族馆了',
-            description: '买了极地的年卡，开始了逛水族馆又逛水族馆坐摩天轮又坐摩天轮的周末。',
+            title: 'Started Visiting Aquarium Again',
+            description: 'Bought an annual pass for Polar Ocean World, started weekends of visiting aquarium and visiting aquarium, riding Ferris wheel and riding Ferris wheel.',
             category: 'play',
             locations: [
-                { name: '青岛极地海洋世界', lat: 36.0547, lng: 120.4658 },
+                { name: 'Qingdao Polar Ocean World', lat: 36.0547, lng: 120.4658 },
             ],
             photos: ["2025_07_jidi.jpg"]
         },
         {
             persons: [
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-07-26',
-            title: '穆夏',
-            description: '去美术馆看了穆夏的画展。',
+            title: 'Mucha',
+            description: 'Went to the Art Museum to see Mucha\'s exhibition.',
             category: 'play',
             locations: [
-                { name: '青岛美术馆', lat: 36.0589, lng: 120.3224 },
+                { name: 'Qingdao Art Museum', lat: 36.0589, lng: 120.3224 },
             ],
             photos: ["2025_07_穆夏.jpg"]
         }
@@ -291,16 +291,16 @@ const events = {
         {
             persons: [
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
             ],
             date: '2025-08-16',
-            title: '烟台',
-            description: '全家一起去烟台的欧乐堡，当天早上把车蹭了，现买了火车票，非常折腾地去了，去了又遇到了旅馆里好多年不见的停电。好在水上乐园足够好玩，下次还去咔咔。',
+            title: 'Yantai',
+            description: 'The whole family went to Yantai\'s Europa Park. That morning we scratched the car, so we bought train tickets on the spot and went through a lot of trouble to get there. Then we encountered a power outage at the hotel that hadn\'t happened in years. Fortunately, the water park was fun enough. We\'ll go again next time!',
             category: 'play',
             locations: [
-                { name: '烟台欧乐堡', lat: 36.0671, lng: 120.3826 },
+                { name: 'Yantai Europa Park', lat: 36.0671, lng: 120.3826 },
             ],
             photos: [
                 '2025_08_europark.jpg',
@@ -311,8 +311,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-08-29',
-            title: '离职',
-            description: '离开了工作十二年的岗位，送走了自己所有的技术书籍，收到了好多好多礼物， 和好多朋友好好聊了天，想到以后可能再也不用做H248了，有点开心又有点伤感。',
+            title: 'Resignation',
+            description: 'Left the position I worked in for twelve years. Sent away all my technical books, received many, many gifts, and had good conversations with many friends. Thinking that I might never have to do H248 again makes me both happy and a bit sad.',
             category: 'work',
         }
     ],
@@ -320,16 +320,16 @@ const events = {
         {
             persons: [
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
             ],
             date: '2025-09-03 - 2025-09-12',
-            title: '西双版纳 & 普洱',
-            description: "太好玩啦， 喜欢热带雨林，喜欢小熊猫。喜欢夜晚的天空，和爱吃水果的蝙蝠。",
+            title: 'Xishuangbanna & Pu\'er',
+            description: "So much fun! Love the tropical rainforest, love the red pandas. Love the night sky and fruit-eating bats.",
             category: 'play',
             locations: [
-                { name: '西双版纳', lat: 22.0079, lng: 100.7979 },
-                { name: '普洱', lat: 23.0477, lng: 100.9667 }
+                { name: 'Xishuangbanna', lat: 22.0079, lng: 100.7979 },
+                { name: 'Pu\'er', lat: 23.0477, lng: 100.9667 }
             ],
             photos: ["2025_09_yunnan.jpg", "2025_09_yunnan2.jpg", "2025_09_yunnan3.jpg"]
         },
@@ -338,8 +338,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-09-15',
-            title: '新工作',
-            description: '开始了新工作，以后就是算法工程师啦。',
+            title: 'New Job',
+            description: 'Started a new job. From now on, I\'m an algorithm engineer.',
             category: 'work',
         }
     ],
@@ -347,17 +347,17 @@ const events = {
         {
             persons: [
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
             ],
             date: '2025-10-01 - 2025-10-31',
-            title: '崂山',
-            description: '时隔六年，又办了崂山的年卡， 开始周末爬山的生活了。农家宴比以往进步很多，不知道是不是因为我最近吃的不好吃的比较多。',
+            title: 'Laoshan',
+            description: 'After six years, I got a Laoshan annual pass again and started weekend hiking life. The farm meals have improved a lot compared to before—I wonder if it\'s because I\'ve been eating too much bad food lately.',
             category: 'play',
             locations: [
-                { name: '崂山北九水', lat: 36.1767, lng: 120.5539 },
-                { name: '崂山仰口', lat: 36.2039, lng: 120.6489 }
+                { name: 'Laoshan Beijiushui', lat: 36.1767, lng: 120.5539 },
+                { name: 'Laoshan Yangkou', lat: 36.2039, lng: 120.6489 }
             ],
             photos: ["2025_10_崂山.jpg", "2025_10_崂山的柿子.jpg"]
         }
@@ -365,30 +365,30 @@ const events = {
     11: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' }
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' }
             ],
             date: '2025-11-14',
-            title: '皮皮的第一次钢琴比赛',
-            description: '发挥超稳的，老母亲激动地热泪盈眶，得了很好的评价，并且得了一等奖。',
+            title: 'Pipi\'s First Piano Competition',
+            description: 'Performed with super stability! The old mother was moved to tears. Received great reviews and won first prize.',
             category: 'work',
             locations: [
-                { name: '青岛臻传音乐', lat: 36.0659, lng: 120.3844 },
+                { name: 'Qingdao Zhenchuan Music', lat: 36.0659, lng: 120.3844 },
             ],
             photos: ["2025_11_钢琴比赛.jpg"]
         },
         {
             persons: [
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
             ],
             date: '2025-11-15',
-            title: '日照',
-            description: '去了日照玩， 酒店里有一个水上乐园，超好玩啊， 玩得开心。',
+            title: 'Rizhao',
+            description: 'Went to Rizhao to play. The hotel had a water park—super fun! Had a great time.',
             category: 'play',
             locations: [
-                { name: '日照开元森泊酒店', lat: 35.4202, lng: 119.5294 },
+                { name: 'Rizhao Kaiyuan Senbo Hotel', lat: 35.4202, lng: 119.5294 },
             ],
             photos: ["2025_11_日照.jpg"]
         }
@@ -396,12 +396,12 @@ const events = {
     12: [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
             ],
             date: '2025-12-14',
-            title: '下雪啦',
-            description: '小伙子们好喜欢下雪的。',
+            title: 'Snow!',
+            description: 'The little guys love snow so much.',
             category: 'love',
             photos: ["2025_12_snow.jpg"]
         },
@@ -410,8 +410,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-12-09 - 2025-12-31',
-            title: '游泳课',
-            description: '办了游泳馆的会员，年后得请个教练了，游得乱七八糟的。',
+            title: 'Swimming Lessons',
+            description: 'Bought a membership at the swimming pool. Need to hire a coach after the New Year—swimming in a total mess.',
             category: 'health',
         },
         {
@@ -419,16 +419,16 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-12-09 - 2025-12-31',
-            title: '动物森友会',
-            description: '五年了，终于集齐了博物馆的馆藏， 虽然也是淘宝买的。',
+            title: 'Animal Crossing',
+            description: 'Five years later, finally completed the museum collection—though I bought it from Taobao.',
             category: 'play',
         }
     ]
 };
 
 const monthNames = [
-    '一月', '二月', '三月', '四月', '五月', '六月',
-    '七月', '八月', '九月', '十月', '十一月', '十二月'
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
 // Store maps for later reference
@@ -445,7 +445,7 @@ function renderTimeline() {
         
         let eventsHtml = '';
         if (monthEvents.length > 0) {
-            // 分离有媒体和无媒体的事件
+            // Separate events with media and without media
             const eventsWithMedia = monthEvents.filter(event => 
                 (event.photos && event.photos.length > 0) || 
                 (event.videos && event.videos.length > 0)
@@ -457,7 +457,7 @@ function renderTimeline() {
             
             let html = '';
             
-            // 渲染有媒体的事件（全宽显示）
+            // Render events with media (full width display)
             if (eventsWithMedia.length > 0) {
                 html += eventsWithMedia.map((event, index) => {
                     const eventId = `event-${month}-${index}`;
@@ -478,7 +478,7 @@ function renderTimeline() {
                                 ${event.videos.map(video => `
                                     <video controls onclick="event.stopPropagation()">
                                         <source src="${video}" type="video/mp4">
-                                        您的浏览器不支持视频播放。
+                                        Your browser does not support video playback.
                                     </video>
                                 `).join('')}
                             </div>
@@ -487,7 +487,7 @@ function renderTimeline() {
                     
                     let locationHtml = '';
                     if (event.locations && event.locations.length > 0) {
-                        const locationNames = event.locations.map(loc => loc.name).join('、');
+                        const locationNames = event.locations.map(loc => loc.name).join(', ');
                         locationHtml = `
                             <div class="event-location">
                                 <div class="location-info">
@@ -507,7 +507,7 @@ function renderTimeline() {
                                 <div class="event-avatars">
                                     ${event.persons.map(p => `<img src="${p.avatar}" alt="${p.name}" class="event-avatar" title="${p.name}">`).join('')}
                                 </div>
-                                <span class="event-person">${event.persons.map(p => p.name).join('、')}</span>
+                                <span class="event-person">${event.persons.map(p => p.name).join(', ')}</span>
                                 <span class="event-date">${event.date}</span>
                             </div>
                             <div class="event-title">${event.title}</div>
@@ -520,7 +520,7 @@ function renderTimeline() {
                 }).join('');
             }
             
-            // 渲染无媒体的事件（4列横向）
+            // Render events without media (4 columns horizontally)
             if (eventsWithoutMedia.length > 0) {
                 html += '<div class="compact-events-grid">';
                 html += eventsWithoutMedia.map((event, index) => {
@@ -528,7 +528,7 @@ function renderTimeline() {
                     
                     let locationHtml = '';
                     if (event.locations && event.locations.length > 0) {
-                        const locationNames = event.locations.map(loc => loc.name).join('、');
+                        const locationNames = event.locations.map(loc => loc.name).join(', ');
                         locationHtml = `
                             <div class="compact-location">
                                 <span class="location-icon">📍</span>
@@ -545,7 +545,7 @@ function renderTimeline() {
                                 <div class="event-avatars">
                                     ${event.persons.map(p => `<img src="${p.avatar}" alt="${p.name}" class="event-avatar" title="${p.name}">`).join('')}
                                 </div>
-                                <span class="event-person">${event.persons.map(p => p.name).join('、')}</span>
+                                <span class="event-person">${event.persons.map(p => p.name).join(', ')}</span>
                                 <span class="event-date">${event.date}</span>
                             </div>
                             <div class="event-title">${event.title}</div>
@@ -559,7 +559,7 @@ function renderTimeline() {
             
             eventsHtml = html;
         } else {
-            eventsHtml = '<div class="no-events">本月暂无特殊事件</div>';
+            eventsHtml = '<div class="no-events">No special events this month</div>';
         }
         
         monthEl.innerHTML = `
@@ -573,7 +573,7 @@ function renderTimeline() {
     // Initialize maps after DOM is updated
     initializeMaps();
     
-    // 添加给朋友的消息
+    // Add message to friend
     if (events.message && events.message.type === 'message') {
         const messageEl = document.createElement('div');
         messageEl.className = 'month message-section';
@@ -584,32 +584,32 @@ function renderTimeline() {
         timelineEl.appendChild(messageEl);
     }
     
-    // 添加 Coming Events in 2026 部分
+    // Add Coming Events in 2026 section
     const comingEl = document.createElement('div');
     comingEl.className = 'month coming-events';
     
     const comingEvents = [
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '贝塔', avatar: 'profile-beita.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Beita', avatar: 'profile-beita.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2026-01-01 - 2026-01-03',
-            title: '徐州',
-            description: '十分期待徐州的美食。',
+            title: 'Xuzhou',
+            description: 'Really looking forward to Xuzhou\'s food.',
             category: 'play'
         },
         {
             persons: [
-                { name: '皮皮', avatar: 'profile-pipi.jpg' },
-                { name: '大头', avatar: 'profile-datou.jpg' },
+                { name: 'Pipi', avatar: 'profile-pipi.jpg' },
+                { name: 'Datou', avatar: 'profile-datou.jpg' },
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2026-01-16',
-            title: '马克西姆的钢琴音乐会',
-            description: '期待！',
+            title: 'Maksim\'s Piano Concert',
+            description: 'Can\'t wait!',
             category: 'play'
         },
     ];
@@ -624,7 +624,7 @@ function renderTimeline() {
                     <div class="event-avatars">
                         ${event.persons.map(p => `<img src="${p.avatar}" alt="${p.name}" class="event-avatar" title="${p.name}">`).join('')}
                     </div>
-                    <span class="event-person">${event.persons.map(p => p.name).join('、')}</span>
+                    <span class="event-person">${event.persons.map(p => p.name).join(', ')}</span>
                     <span class="event-date">${event.date}</span>
                 </div>
                 <div class="event-title">${event.title}</div>
@@ -642,9 +642,9 @@ function renderTimeline() {
     timelineEl.appendChild(comingEl);
 }
 
-// 打开照片查看器（可选功能）
+// Open photo viewer (optional feature)
 function openPhoto(photoSrc) {
-    // 创建模态框显示大图
+    // Create modal to display large image
     const modal = document.createElement('div');
     modal.style.cssText = `
         position: fixed;
@@ -672,12 +672,12 @@ function openPhoto(photoSrc) {
     modal.appendChild(img);
     document.body.appendChild(modal);
     
-    // 点击关闭模态框
+    // Click to close modal
     modal.onclick = () => {
         document.body.removeChild(modal);
     };
     
-    // 按ESC关闭模态框
+    // Press ESC to close modal
     const closeOnEsc = (e) => {
         if (e.key === 'Escape') {
             document.body.removeChild(modal);
