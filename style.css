@@ -353,7 +353,7 @@ body {
 
     /* 标题区域适配 */
     #ui-overlay {
-        top: 12%;
+        top: 18%;
         width: 90%;
     }
 
@@ -367,7 +367,7 @@ body {
         overflow: hidden;
     }
 
-    .festive-text {
+    #main-title > .festive-text {
         width: 100%;
         font-size: 1.4rem;
         margin-bottom: 3px;
@@ -375,8 +375,13 @@ body {
         white-space: nowrap;
     }
 
+    #main-title > .festive-text ~ * {
+        display: inline-flex;
+        gap: 3px;
+    }
+
     .year-number {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
         margin: 0 1px;
         display: inline-block;
     }
@@ -396,7 +401,7 @@ body {
 
     /* 家族头像适配 */
     #family-avatars {
-        top: 40%;
+        top: 48%;
         flex-wrap: wrap;
         gap: 25px;
         padding: 0 15px;
@@ -428,7 +433,7 @@ body {
 
     /* Timeline链接容器适配 */
     .timeline-links {
-        top: 64%;
+        top: 70%;
         gap: 12px;
     }
 
@@ -523,7 +528,7 @@ body {
     }
 
     #ui-overlay {
-        top: 10%;
+        top: 15%;
         width: 95%;
         padding: 0 5px;
     }
@@ -545,8 +550,13 @@ body {
         white-space: nowrap;
     }
 
+    #main-title > .festive-text ~ * {
+        display: inline-flex;
+        gap: 2px;
+    }
+
     .year-number {
-        font-size: 2.2rem;
+        font-size: 1.5rem;
         margin: 0 0.5px;
         display: inline-block;
     }
@@ -565,7 +575,7 @@ body {
     }
 
     #family-avatars {
-        top: 36%;
+        top: 45%;
         gap: 20px;
         padding: 0 10px;
         max-width: 95%;
@@ -596,7 +606,7 @@ body {
 
     /* Timeline链接容器适配 */
     .timeline-links {
-        top: 58%;
+        top: 68%;
         gap: 10px;
     }
 
