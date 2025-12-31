@@ -387,7 +387,7 @@ body {
 
     /* 家族头像适配 */
     #family-avatars {
-        top: 62%;
+        top: 58%;
         flex-wrap: wrap;
         gap: 25px;
         padding: 0 15px;
@@ -419,7 +419,7 @@ body {
 
     /* Timeline链接容器适配 */
     .timeline-links {
-        top: 68%;
+        top: 72%;
         gap: 12px;
     }
 
@@ -544,7 +544,7 @@ body {
     }
 
     #family-avatars {
-        top: 58%;
+        top: 52%;
         gap: 20px;
         padding: 0 10px;
         max-width: 95%;
