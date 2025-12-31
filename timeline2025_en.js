@@ -4,8 +4,8 @@ const events = {
         title: 'To My Faraway Friend',
         content: `
             <p>Dear friend,</p>
-            <p>It's been a while! Honestly, even though we're far apart and busy with our own lives, every time I quiet down, I think of you. So I put together these bits and pieces, thinking that even if we can't meet every day, I can at least let you see what my recent days look like through this.</p>   
-            <p>We don't chat much, but I always think of you. I'm especially grateful that you took the time to read all the way here—it feels like we're sitting together again, chatting slowly.</p>
+            <p>It's been a while! Honestly, even though we're far apart and busy with our own lives, I'm missing you a lot and the old days we spent together. So I put together these bits and pieces, thinking that even if we can't meet every day, I can at least let you see what my recent days look like through this.</p>   
+            <p>I'm especially grateful that you took the time to read all the way here.</p>
             <p>New Year is coming! I wish you a happy New Year, peace and safety, and little joys every day.</p>
 
             <p class="signature">— Joyce</p>
@@ -38,7 +38,7 @@ const events = {
             ],
             date: '2025-01-30',
             title: 'Langyatai',
-            description: 'Braved the cold wind to visit Langyatai. The scenery is the same as before, but it wasn\'t this cold back then.',
+            description: 'Last time I visited this spot was in 1995. The scenery is the same as before, but it wasn\'t this cold back then.',
             category: 'play',
             locations: [
                 { name: 'Qingdao Langyatai', lat: 35.6456, lng: 119.8801 },
@@ -53,8 +53,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-01-01 - 2025-01-30',
-            title: 'A Great Value Combo Ticket',
-            description: 'Because we bought winter tickets for the Underwater World and ship cruises, every weekend of the winter was spent either at the aquarium or taking boat rides in the sea breeze.',
+            title: 'Aquarium and Boat',
+            description: 'We bought really cheap season tickets for the aquarium and the one-hour cruise around Jiaozhou Bay, so we ended up spending every weekend either at the aquarium or on the boat.',
             category: 'play',
             locations: [
                 { name: 'Qingdao Aquarium', lat: 36.0532, lng: 120.3224 },
@@ -73,7 +73,7 @@ const events = {
             ],
             date: '2025-02-16',
             title: 'Observation Deck in a Skyscraper',
-            description: 'Thought the view was beautiful, so spent a lot of money on photos. The result was that the little guys were trembling with fear.',
+            description: 'This is one of my favorite spots in Qingdao, and it was the first time I brought both kids here. The view was really beatufiful, so I decided to get some nice photos done. But the thing is, the little ones were absolutely terrified during the whole shoot!',
             category: 'play',
             locations: [
                 { name: 'Qingdao Haitian Center', lat: 36.0539, lng: 120.3114 },
@@ -89,7 +89,7 @@ const events = {
             ],
             date: '2025-02-01 - 2025-02-28',
             title: 'Zhongshan Park and Zoo',
-            description: 'The kids like seeing small animals, so we often go to see them. 8.5 yuan per ticket is such a bargain.',
+            description: 'Zhongshan Park and the zoo are connected, so it’s a perfect trip for the kids. They can ride bikes in the park section and then visit the animals — lions, tigers, vultures, pandas — all inside the same grounds. Zhongshan Park is completely free and the ticket to the zoo is only 8.5 RMB. ',
             category: 'play',
             locations: [
                 { name: 'Qingdao Zhongshan Park', lat: 36.0564, lng: 120.3490 },
@@ -104,8 +104,8 @@ const events = {
                 { name: 'Beita', avatar: 'profile-beita.jpg' },
             ],
             date: '2025-03-01',
-            title: 'Chen Beita in Kindergarten Small Class',
-            description: 'Chen Beita, just turned two and a half, started kindergarten and is confused every day.',
+            title: 'Beita Starts Kindergarten',
+            description: 'Our little Beita has just turned two and a half and has started his first year of Kindergarten (Here Kindergarten typically spans three years (or more) before primary school.) Every day is a new adventure for him, and he often looks completely bewildered.',
             category: 'work',
             photos: ['2025_03_beitaK.jpg',"2025_03_beitaK2.jpg"]
         },
@@ -117,7 +117,7 @@ const events = {
             ],
             date: '2025-03-08',
             title: 'Celebrating Women\'s Day',
-            description: 'Participated in the Women\'s Day activity organized by the kindergarten (?), did crafts with the kids, and had fun.',
+            description: 'Participated in the Women\'s Day activity organized by the kindergarten, worked on a craft project together with Pipi, and had a lot of fun.',
             category: 'love',
             photos: [
                 '2025_03_womensday.jpg',
@@ -129,7 +129,7 @@ const events = {
             ],
             date: '2025-03-16',
             title: 'Flag Raiser Chen Pipi',
-            description: 'Chen Pipi finally became a flag raiser. But because Mom dressed him in too many clothes, the handsome flag bearer uniform was stretched to look terrible.',
+            description: 'Chen Pipi finally became a flag raiser. But because I dressed him in too many clothes, the handsome uniform was stretched to look terrible.',
             category: 'work',
             photos: ['2025_03_pipi.jpg']
         },
@@ -139,7 +139,7 @@ const events = {
             ],
             date: '2025-03-29',
             title: 'Spring Equinox Gathering',
-            description: 'The annual Spring Pancake Festival. Went to a friend\'s house and ate the best spring pancakes, fried chicken, and cold lotus root in my life. Also亲手实践从热气腾腾锅里揪出了一张煎饼.',
+            description: 'Got together with friends for the annual Spring Pancake Festival. The food was incredible — possibly the best spring pancakes, fried chicken, and cold lotus root I\'ve ever had. The best part was to `pull a steaming hot pancake right out of the wok with my own hands`.  If that sounds unusual to you, don’t worry — it was a first for me too! I\'d never heard of making Chinese food quite like that.',
             category: 'love',
             photos: ['2025_03_春分.jpg']
         },
@@ -151,8 +151,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-03-01 - 2025-03-31',
-            title: 'Spring is for Slides',
-            description: 'So we all played on slides at Fushan.',
+            title: 'Spring Slide Days',
+            description: 'The kids love the little playgrounds up on Fushan Hill. Now that it\'s spring, we\'re back to our favorite activity: going down the slides.',
             category: 'play',
             locations: [
                 { name: 'Qingdao Fushan Forest Park', lat: 36.1000, lng: 120.4036 },
@@ -169,8 +169,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-04-05',
-            title: 'Where to Go During Holiday with Fewer People',
-            description: 'Spring has arrived and flowers are blooming. Not going out to play is a waste, but going out feels like there are too many tourists everywhere which is troublesome. Saw that hotels in Jiaozhou didn\'t raise prices and thought there wouldn\'t be too many people—too naive!',
+            title: 'Finding a Less Crowded Spot (Spoiler: Failed)',
+            description: 'It\'s spring, and the flowers are out. It feels wrong not to go somewhere, but the thought of tourist crowds is exhausting. I saw hotels in Jiaozhou hadn\'t raised their rates and hoped it meant fewer people. A naive hope, as it turned out. The place was just as packed.',
             category: 'love',
             locations: [
                 { name: 'Qingdao Shaohai National Wetland Park', lat: 36.2653, lng: 120.0944 },
@@ -187,8 +187,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2025-05-01 - 2025-05-31',
-            title: 'May Theme: Digging Sand',
-            description: 'Digging sand every weekend.',
+            title: 'May\'s Theme: All About Sand',
+            description: 'Weekend agenda for May: playing in the sand at a differnet beach.',
             category: 'health',
             locations: [
                 { name: 'Qingdao Shilaoren Beach', lat: 36.0612, lng: 120.4713 },
@@ -208,7 +208,7 @@ const events = {
             ],
             date: '2025-06-10',
             title: 'Pipi\'s First Concert Performance',
-            description: 'Pipi\'s first concert performance! Received bursts of applause and cheers for the wonderful introduction!',
+            description: 'He did something special: introduced himself and his piece with a loud, clear voice before performing. Everything went perfectly, and the audience responded with warm applause and cheers!',
             category: 'work',
             photos: ["2025_06_音乐会.jpg"],
             locations: [
@@ -265,7 +265,7 @@ const events = {
             ],
             date: '2025-07-13 - 2025-07-31',
             title: 'Started Visiting Aquarium Again',
-            description: 'Bought an annual pass for Polar Ocean World, started weekends of visiting aquarium and visiting aquarium, riding Ferris wheel and riding Ferris wheel.',
+            description: 'With our new Polar Ocean World annual pass, we practically live there on weekends. It’s just aquarium, Ferris wheel, aquarium, Ferris wheel...',
             category: 'play',
             locations: [
                 { name: 'Qingdao Polar Ocean World', lat: 36.0547, lng: 120.4658 },
@@ -278,8 +278,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-07-26',
-            title: 'Mucha',
-            description: 'Went to the Art Museum to see Mucha\'s exhibition.',
+            title: 'Alfons Mucha',
+            description: 'We went to the Art Museum to see Mucha\'s exhibition.',
             category: 'play',
             locations: [
                 { name: 'Qingdao Art Museum', lat: 36.0589, lng: 120.3224 },
@@ -297,10 +297,10 @@ const events = {
             ],
             date: '2025-08-16',
             title: 'Yantai',
-            description: 'The whole family went to Yantai\'s Europa Park. That morning we scratched the car, so we bought train tickets on the spot and went through a lot of trouble to get there. Then we encountered a power outage at the hotel that hadn\'t happened in years. Fortunately, the water park was fun enough. We\'ll go again next time!',
+            description: 'The whole family went to Yantai\'s EuroPark. That morning we scratched the car, so we bought train tickets on the spot and went through a lot of trouble to get there. Then we encountered a power outage at the hotel that hadn\'t happened in years. Fortunately, the water park was fun enough. We\'ll go again next time!',
             category: 'play',
             locations: [
-                { name: 'Yantai Europa Park', lat: 36.0671, lng: 120.3826 },
+                { name: 'Yantai EuroPark', lat: 36.0671, lng: 120.3826 },
             ],
             photos: [
                 '2025_08_europark.jpg',
@@ -311,8 +311,8 @@ const events = {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' },
             ],
             date: '2025-08-29',
-            title: 'Resignation',
-            description: 'Left the position I worked in for twelve years. Sent away all my technical books, received many, many gifts, and had good conversations with many friends. Thinking that I might never have to do H248 again makes me both happy and a bit sad.',
+            title: 'Left a job',
+            description: 'I left the position I worked in for twelve years. Sent away all my technical books, received many, many gifts, and had good conversations with many friends. Thinking that I might never have to do H.248 protocol again makes me both happy and a bit sad.',
             category: 'work',
         }
     ],
@@ -339,7 +339,7 @@ const events = {
             ],
             date: '2025-09-15',
             title: 'New Job',
-            description: 'Started a new job. From now on, I\'m an algorithm engineer.',
+            description: 'Started a new job. Officialy in the AI industry.',
             category: 'work',
         }
     ],
@@ -369,7 +369,7 @@ const events = {
             ],
             date: '2025-11-14',
             title: 'Pipi\'s First Piano Competition',
-            description: 'Performed with super stability! The old mother was moved to tears. Received great reviews and won first prize.',
+            description: 'Pipi was cool, confident on stage — I was so proud, I cried. He won fantastic feedback, and a first prize.',
             category: 'work',
             locations: [
                 { name: 'Qingdao Zhenchuan Music', lat: 36.0659, lng: 120.3844 },
@@ -385,7 +385,7 @@ const events = {
             ],
             date: '2025-11-15',
             title: 'Rizhao',
-            description: 'Went to Rizhao to play. The hotel had a water park—super fun! Had a great time.',
+            description: 'We went to Rizhao to play. The hotel had a water park—super fun! We had a great time.',
             category: 'play',
             locations: [
                 { name: 'Rizhao Kaiyuan Senbo Hotel', lat: 35.4202, lng: 119.5294 },
@@ -411,7 +411,7 @@ const events = {
             ],
             date: '2025-12-09 - 2025-12-31',
             title: 'Swimming Lessons',
-            description: 'Bought a membership at the swimming pool. Need to hire a coach after the New Year—swimming in a total mess.',
+            description: 'I bought a membership at the swimming pool. I probably will need a coach after the New Year—  I can\'t seem to get it right by myself.',
             category: 'health',
         },
         {
@@ -608,8 +608,8 @@ function renderTimeline() {
                 { name: 'Joyce', avatar: 'profile-joyce.jpg' }
             ],
             date: '2026-01-16',
-            title: 'Maksim\'s Piano Concert',
-            description: 'Can\'t wait!',
+            title: 'Maksim Mrvica\'s Piano Concert',
+            description: 'Can\'t wait!!!!',
             category: 'play'
         },
     ];
