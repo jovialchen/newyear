@@ -121,37 +121,6 @@ function createSnowflakes() {
 
 createSnowflakes();
 
-// 音乐播放控制
-const music = document.getElementById('newYearMusic');
-let musicPlaying = false;
-
-function toggleMusic() {
-    if (musicPlaying) {
-        music.pause();
-        musicPlaying = false;
-    } else {
-        music.play().catch(err => console.log('播放失败:', err));
-        musicPlaying = true;
-    }
-}
-
-// 音乐按钮点击控制
-const musicToggleBtn = document.getElementById('music-toggle');
-
-musicToggleBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // 阻止事件冒泡
-    toggleMusic();
-});
-
-// 页面加载时自动播放音乐
-window.addEventListener('load', () => {
-    // 延迟一下页面完全加载后播放
-    setTimeout(() => {
-        music.play().catch(err => console.log('自动播放失败:', err));
-        musicPlaying = true;
-    }, 500); // 延迟500ms后自动播放
-});
-
 // 延迟显示文字
 setTimeout(() => {
     document.getElementById('main-title').classList.add('fade-in');
