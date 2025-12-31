@@ -103,7 +103,7 @@ body {
 /* 文字样式 */
 #ui-overlay {
     position: absolute;
-    top: 35%;
+    top: 25%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
@@ -227,7 +227,7 @@ body {
 /* 家族头像样式 */
 #family-avatars {
     position: absolute;
-    top: 55%;
+    top: 45%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -277,7 +277,7 @@ body {
 /* Timeline链接容器样式 */
 .timeline-links {
     position: absolute;
-    top: 65%;
+    top: 62%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -353,7 +353,7 @@ body {
 
     /* 标题区域适配 */
     #ui-overlay {
-        top: 28%;
+        top: 15%;
         width: 90%;
     }
 
@@ -387,7 +387,7 @@ body {
 
     /* 家族头像适配 */
     #family-avatars {
-        top: 58%;
+        top: 40%;
         flex-wrap: wrap;
         gap: 25px;
         padding: 0 15px;
@@ -419,7 +419,7 @@ body {
 
     /* Timeline链接容器适配 */
     .timeline-links {
-        top: 72%;
+        top: 64%;
         gap: 12px;
     }
 
@@ -514,7 +514,7 @@ body {
     }
 
     #ui-overlay {
-        top: 22%;
+        top: 12%;
         width: 95%;
         padding: 0 10px;
     }
@@ -544,7 +544,7 @@ body {
     }
 
     #family-avatars {
-        top: 52%;
+        top: 36%;
         gap: 20px;
         padding: 0 10px;
         max-width: 95%;
@@ -575,7 +575,7 @@ body {
 
     /* Timeline链接容器适配 */
     .timeline-links {
-        top: 66%;
+        top: 58%;
         gap: 10px;
     }
 
