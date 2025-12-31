@@ -353,7 +353,7 @@ body {
 
     /* 标题区域适配 */
     #ui-overlay {
-        top: 23%;
+        top: 26%;
         width: 90%;
     }
 
@@ -525,7 +525,7 @@ body {
     }
 
     #ui-overlay {
-        top: 20%;
+        top: 23%;
         width: 95%;
         padding: 0 5px;
     }
