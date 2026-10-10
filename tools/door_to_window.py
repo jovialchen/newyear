@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 
 SRC = Path("G1642-maya c4d blender max卡通室内场景/katong/qiangmian.jpg")
 
-SKY = (30, 144, 216)      # 与 main.js 的 SKY_COLOR 0x1e90d8 一致
+SKY = (0x42, 0xA5, 0xF5)  # 中蓝：比门板亮很多，又能反衬出白色格框
 FRAME = (245, 250, 252)   # 窗框白
 
 img = Image.open(SRC).convert("RGB")

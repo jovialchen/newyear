@@ -26,6 +26,60 @@ const WINDOW_SHEER_MESHES = ['meshlambert19SG']; // 窗框+白纱 -> 半透明�
 const SKY_COLOR = 0x1e90d8;
 const SHEER_OPACITY = 0.7;
 
+// 门扇范围（-z 墙，屏幕反投影实测四角），在这上面建 3D 窗
+const DOOR_RECT = { cx: -2.55, cy: 1.83, w: 2.0, h: 3.1, zLeaf: -3.433 };
+
+// 和其他窗户同款的白框 + 窗棱（1 竖 3 横 = 2 列 4 行）+ 无光照蓝天玻璃
+function buildDoorWindow() {
+    const { cx, cy, w, h, zLeaf } = DOOR_RECT;
+    const group = new THREE.Group();
+
+    // 玻璃：无光照亮蓝，贴在门扇前面
+    const glass = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshBasicMaterial({ color: SKY_COLOR }),
+    );
+    glass.position.set(cx, cy, zLeaf + 0.005);
+    group.add(glass);
+
+    // 白纱层：和真窗户一样罩在玻璃上，让蓝色变浅
+    const sheer = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshStandardMaterial({
+            color: 0xffffff, transparent: true, opacity: SHEER_OPACITY, roughness: 0.9, metalness: 0,
+        }),
+    );
+    sheer.position.set(cx, cy, zLeaf + 0.007);
+    group.add(sheer);
+
+    // 框条：白色微发光，凸出玻璃面
+    const frameMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.15, roughness: 0.8, metalness: 0,
+    });
+    const FRAME_T = 0.12;  // 外框宽
+    const BAR_T = 0.07;    // 窗棱宽
+    const DEPTH = 0.08;
+    const zBar = zLeaf + 0.005 + DEPTH / 2;
+    const addBar = (bw, bh, bx, by, t) => {
+        const bar = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, DEPTH), frameMat);
+        bar.position.set(bx, by, zBar);
+        group.add(bar);
+    };
+
+    // 外框四边（盖住门上绿色门框的边缘）
+    addBar(w, FRAME_T, cx, cy + h / 2 - FRAME_T / 2);
+    addBar(w, FRAME_T, cx, cy - h / 2 + FRAME_T / 2);
+    addBar(FRAME_T, h, cx - w / 2 + FRAME_T / 2, cy);
+    addBar(FRAME_T, h, cx + w / 2 - FRAME_T / 2, cy);
+    // 窗棱：1 竖 + 3 横
+    const iw = w - FRAME_T * 2;
+    const ih = h - FRAME_T * 2;
+    addBar(BAR_T, ih, cx, cy);
+    for (const fy of [-0.25, 0, 0.25]) addBar(iw, BAR_T, cx, cy + fy * ih);
+
+    scene.add(group);
+}
+
 // ---------- 渲染基础 ----------
 const container = document.getElementById('scene-container');
 // preserveDrawingBuffer 仅供 ?debug 时截图调试读取像素
@@ -276,18 +330,9 @@ async function init() {
         }
     });
 
-    // 门已改窗：落地玻璃门自带白色格框。贴图里深色门板填成玻璃蓝（tools/door_to_window.py），
-    // 再在每个窗格内垫一片无光照蓝玻璃（藏在格框后面 2mm），亮度和其他窗户一致
-    const PANE_COLS = [-3.01, -2.10];                    // 两列窗格中心 x（屏幕反投影实测）
-    const PANE_ROWS = [0.63, 1.355, 2.135, 2.945];       // 四行窗格中心 y
-    const paneGlassMat = new THREE.MeshBasicMaterial({ color: SKY_COLOR });
-    for (const colX of PANE_COLS) {
-        for (const rowY of PANE_ROWS) {
-            const pane = new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.51), paneGlassMat);
-            pane.position.set(colX, rowY, -3.431);
-            scene.add(pane);
-        }
-    }
+    // 门已改窗：贴图里深色门板填成玻璃蓝兜底（tools/door_to_window.py），
+    // 再照搬其他窗户的结构建 3D 窗——白色外框 + 无光照蓝天玻璃 + 窗棱（1 竖 3 横）
+    buildDoorWindow();
 
     // 书架：归一化高度、上色，靠在沙发墙（-z）两侧、面向房间中央（+z）
     const bookcaseA = bookcaseAGltf.scene;
