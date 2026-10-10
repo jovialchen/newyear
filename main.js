@@ -40,15 +40,16 @@ scene.background = new THREE.Color(0xfdf3d8);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
 
-// 视角固定：窄屏（手机竖屏）拉宽视野并抬高拉远相机，保证两个书架都在画面里
-const CAMERA_TARGET = new THREE.Vector3(0, 1.25, -2.0);
+// 视角固定：机位在没有墙的开放面（-x 靠门一角），斜望房间，门、三面窗户都在画面里。
+// 窄屏（手机竖屏）拉宽视野并抬高拉远相机
+const CAMERA_TARGET = new THREE.Vector3(2.2, 1.1, 2.2);
 
 function fitCameraToViewport() {
     const aspect = window.innerWidth / window.innerHeight;
-    camera.fov = aspect < 0.8 ? 105 : aspect < 1.2 ? 70 : 50;
+    camera.fov = aspect < 0.8 ? 100 : aspect < 1.2 ? 85 : 75;
     camera.aspect = aspect;
-    if (aspect < 0.8) camera.position.set(0, 2.1, 3.3);
-    else camera.position.set(0, 1.9, 3.0);
+    if (aspect < 0.8) camera.position.set(-5.2, 2.6, -3.2);
+    else camera.position.set(-4.6, 2.4, -2.8);
     camera.lookAt(CAMERA_TARGET);
     camera.updateProjectionMatrix();
 }
@@ -272,9 +273,9 @@ async function init() {
 
     const wallZ = roomBox.min.z;
     const SINK = 0.14; // 源模型包围盒底部低于支脚，往下沉一点贴住地板
-    bookcaseA.rotation.y = 0.18;   // 微微转向房间中央
-    bookcaseB.rotation.y = -0.18;
-    bookcaseA.position.set(-3.1, -localBoxA.min.y - SINK, wallZ + depthA / 2 + 0.1);
+    bookcaseA.rotation.y = -Math.PI / 2;  // +x 墙（窗墙靠门侧的空白段），面向房间中央
+    bookcaseB.rotation.y = -0.18;         // 沙发墙右侧，微微转向房间中央
+    bookcaseA.position.set(roomBox.max.x - depthA / 2 - 0.1, -localBoxA.min.y - SINK, -2.0);
     bookcaseB.position.set(3.1, -localBoxB.min.y - SINK, wallZ + depthB / 2 + 0.1);
     scene.add(bookcaseA, bookcaseB);
 
