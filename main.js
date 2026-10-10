@@ -28,7 +28,8 @@ const SHEER_OPACITY = 0.7;
 
 // ---------- 渲染基础 ----------
 const container = document.getElementById('scene-container');
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// preserveDrawingBuffer 仅供 ?debug 时截图调试读取像素
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: location.search.includes('debug') });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -274,6 +275,19 @@ async function init() {
             });
         }
     });
+
+    // 门已改窗：落地玻璃门自带白色格框。贴图里深色门板填成玻璃蓝（tools/door_to_window.py），
+    // 再在每个窗格内垫一片无光照蓝玻璃（藏在格框后面 2mm），亮度和其他窗户一致
+    const PANE_COLS = [-3.01, -2.10];                    // 两列窗格中心 x（屏幕反投影实测）
+    const PANE_ROWS = [0.63, 1.355, 2.135, 2.945];       // 四行窗格中心 y
+    const paneGlassMat = new THREE.MeshBasicMaterial({ color: SKY_COLOR });
+    for (const colX of PANE_COLS) {
+        for (const rowY of PANE_ROWS) {
+            const pane = new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.51), paneGlassMat);
+            pane.position.set(colX, rowY, -3.431);
+            scene.add(pane);
+        }
+    }
 
     // 书架：归一化高度、上色，靠在沙发墙（-z）两侧、面向房间中央（+z）
     const bookcaseA = bookcaseAGltf.scene;

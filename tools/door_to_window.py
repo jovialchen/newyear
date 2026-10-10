@@ -52,23 +52,8 @@ max_x, max_y = min(w, max_x + pad_x), min(h, max_y + pad_y)
 
 draw = ImageDraw.Draw(img)
 
-# 白色外框
-draw.rectangle([min_x, min_y, max_x, max_y], fill=FRAME)
-
-# 蓝天玻璃（内缩一圈作为框厚）
-bw = max(6, int((max_x - min_x) * 0.07))
-bh = max(6, int((max_y - min_y) * 0.05))
-gx0, gy0, gx1, gy1 = min_x + bw, min_y + bh, max_x - bw, max_y - bh
-draw.rectangle([gx0, gy0, gx1, gy1], fill=SKY)
-
-# 窗棂：1 根竖条 + 3 根横条（和房间里其他窗户的分格风格一致）
-bar_v = max(4, int((gx1 - gx0) * 0.06))
-bar_h = max(4, int((gy1 - gy0) * 0.04))
-cx = (gx0 + gx1) // 2
-draw.rectangle([cx - bar_v // 2, gy0, cx + bar_v // 2, gy1], fill=FRAME)
-for i in range(1, 4):
-    cy = gy0 + (gy1 - gy0) * i // 4
-    draw.rectangle([gx0, cy - bar_h // 2, gx1, cy + bar_h // 2], fill=FRAME)
+# 门区域整片填成玻璃蓝（含绿色门框），白色窗框窗棂由 3D 几何补上（见 main.js）
+draw.rectangle([min_x, min_y, max_x, max_y], fill=SKY)
 
 img.save(SRC, quality=92)
-print(f"门区域 ({min_x},{min_y})-({max_x},{max_y}) 已改绘成窗户")
+print(f"门区域 ({min_x},{min_y})-({max_x},{max_y}) 已填为玻璃蓝")
