@@ -23,7 +23,8 @@ const BOOKCASE_DEFAULT_COLOR = 0xb98a55;
 // 窗玻璃网格名 -> 涂成晴空蓝（源模型导出时丢了窗外蓝天）
 const WINDOW_GLASS_MESHES = ['meshblinn12SG'];  // 玻璃 -> 晴空蓝
 const WINDOW_SHEER_MESHES = ['meshlambert19SG']; // 窗框+白纱 -> 半透明白
-const SKY_COLOR = 0x4fb0e8;
+const SKY_COLOR = 0x1e90d8;
+const SHEER_OPACITY = 0.7;
 
 // ---------- 渲染基础 ----------
 const container = document.getElementById('scene-container');
@@ -266,7 +267,7 @@ async function init() {
             node.material = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 transparent: true,
-                opacity: 0.25,
+                opacity: SHEER_OPACITY,
                 roughness: 0.9,
                 metalness: 0,
                 side: THREE.DoubleSide,
