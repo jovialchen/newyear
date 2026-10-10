@@ -1,0 +1,304 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { categories } from './stories.js';
+import { openReader, isReaderOpen } from './reader.js';
+
+// ---------- 可调常量 ----------
+const ROOM_SIZE = 10;          // 房间模型归一化后的最长边
+const BOOKCASE_HEIGHT = 2.6;   // 书架归一化后的高度
+const BOOK_HEIGHT = 0.6;       // 书的世界高度
+
+// 书架材质名 -> 卡通配色（源模型缺 mtl，按名字上色）
+const BOOKCASE_COLORS = [
+    [/kuning_gelap/i, 0xcf9535],
+    [/kuning/i, 0xf4c542],
+    [/merah/i, 0xd94a3a],
+    [/besi/i, 0x7a828e],
+    [/material/i, 0x9c6b3f],
+    [/wood|kayu/i, 0x9c6b3f],
+];
+const BOOKCASE_DEFAULT_COLOR = 0xb98a55;
+
+// ---------- 渲染基础 ----------
+const container = document.getElementById('scene-container');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xfdf3d8);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+
+// 窄屏（手机竖屏）拉宽视野并抬高拉远相机，保证两个书架都在画面里
+function fitCameraToViewport() {
+    const aspect = window.innerWidth / window.innerHeight;
+    camera.fov = aspect < 0.8 ? 105 : aspect < 1.2 ? 70 : 50;
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+    if (aspect < 0.8) camera.position.set(0, 2.1, 3.3);
+    else camera.position.set(0, 1.9, 3.0);
+}
+fitCameraToViewport();
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.enablePan = false;
+controls.minDistance = 1.5;
+controls.maxDistance = 7;
+controls.minPolarAngle = 0.7;
+controls.maxPolarAngle = 1.62;
+controls.minAzimuthAngle = -1.2;
+controls.maxAzimuthAngle = 1.2;
+
+scene.add(new THREE.HemisphereLight(0xfff6e0, 0x9a7a55, 1.1));
+const sun = new THREE.DirectionalLight(0xffe8c0, 1.6);
+sun.position.set(4, 6, 3);
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+// ---------- 加载 ----------
+const manager = new THREE.LoadingManager();
+const progressEl = document.getElementById('loading-progress');
+manager.onProgress = (_url, loaded, total) => {
+    progressEl.style.width = `${Math.round((loaded / total) * 100)}%`;
+};
+
+const loader = new GLTFLoader(manager);
+loader.setMeshoptDecoder(MeshoptDecoder);
+
+function loadGlb(url) {
+    return new Promise((resolve, reject) => loader.load(url, resolve, undefined, reject));
+}
+
+// ---------- 工具 ----------
+function bboxOf(object) {
+    return new THREE.Box3().setFromObject(object);
+}
+
+// 缩放 object 使其包围盒达到 target（axis='y' 时按高度，否则按最长边），
+// 返回缩放后、未旋转平移前的包围盒
+function normalize(object, target, axis) {
+    const box = bboxOf(object);
+    const size = box.getSize(new THREE.Vector3());
+    const current = axis === 'y' ? size.y : Math.max(size.x, size.y, size.z);
+    object.scale.multiplyScalar(target / current);
+    return bboxOf(object);
+}
+
+function recolorBookcase(root) {
+    root.traverse((node) => {
+        if (!node.isMesh) return;
+        const materials = Array.isArray(node.material) ? node.material : [node.material];
+        const recolored = materials.map((mat) => {
+            const hit = BOOKCASE_COLORS.find(([pattern]) => pattern.test(mat.name || ''));
+            const color = hit ? hit[1] : BOOKCASE_DEFAULT_COLOR;
+            return new THREE.MeshStandardMaterial({ color, roughness: 0.75, metalness: 0.05 });
+        });
+        node.material = Array.isArray(node.material) ? recolored : recolored[0];
+    });
+}
+
+// ---------- 可点击的书 ----------
+const clickableBooks = [];
+
+// localHeight: 在书架局部坐标里的书高（书架缩放会把它放大到 BOOK_HEIGHT）
+function makeBook(category, localHeight) {
+    const group = new THREE.Group();
+    const color = new THREE.Color(category.color);
+
+    const coverMat = new THREE.MeshStandardMaterial({
+        color, roughness: 0.5, metalness: 0.05,
+        emissive: color, emissiveIntensity: 0,
+    });
+    const paperMat = new THREE.MeshStandardMaterial({ color: 0xfffaf0, roughness: 0.9 });
+
+    const h = localHeight;
+    const w = h * 0.27; // 书脊宽
+    const d = h * 0.72; // 书厚
+    const cover = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), coverMat);
+    const pages = new THREE.Mesh(new THREE.BoxGeometry(w * 0.86, h * 0.94, d * 0.9), paperMat);
+    pages.position.x = w * 0.08;
+    group.add(cover, pages);
+
+    group.userData.category = category;
+    group.userData.coverMat = coverMat;
+    group.traverse((node) => { node.userData.bookRoot = group; });
+    clickableBooks.push(group);
+    return group;
+}
+
+// 把一个类别的书摆上书架（bookcase 已定位完毕）
+// 两个书架造型不同，摆放方式分开配置：
+const SHELF_LAYOUT = [
+    { layFlat: false, x: [0.28, 0.52], y: 0.16, z: 0.80 }, // A：斜书堆造型，书立在底座平台前沿
+    { layFlat: false, x: [0.25, 0.85], y: 0.42, z: 0.88 }, // B：立式书架，书竖立在隔层里
+];
+
+function placeBook(category, bookcase, localBox, layout, indexOnShelf, totalOnShelf) {
+    const scale = bookcase.scale.x;
+    const book = makeBook(category, BOOK_HEIGHT / scale);
+    const size = localBox.getSize(new THREE.Vector3());
+
+    const t = totalOnShelf === 1 ? 0.5 : indexOnShelf / (totalOnShelf - 1);
+    const x = localBox.min.x + size.x * (layout.x[0] + (layout.x[1] - layout.x[0]) * t);
+    const z = localBox.min.z + size.z * layout.z;
+
+    if (layout.layFlat) {
+        book.rotation.x = -Math.PI / 2; // 躺倒，封面朝上
+        book.position.set(x, localBox.min.y + size.y * layout.y, z);
+    } else {
+        book.rotation.y = (Math.random() - 0.5) * 0.12;
+        book.position.set(x, localBox.min.y + size.y * layout.y + BOOK_HEIGHT / scale / 2, z);
+    }
+    bookcase.add(book);
+}
+
+// ---------- 交互 ----------
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const tooltip = document.getElementById('book-tooltip');
+let hoveredBook = null;
+let downPosition = null;
+
+function setHovered(book, event) {
+    if (hoveredBook !== book) {
+        if (hoveredBook) {
+            hoveredBook.userData.coverMat.emissiveIntensity = 0;
+            hoveredBook.scale.setScalar(1);
+        }
+        hoveredBook = book;
+        if (book) {
+            book.userData.coverMat.emissiveIntensity = 0.45;
+            book.scale.setScalar(1.12);
+            tooltip.textContent = book.userData.category.title;
+            tooltip.classList.remove('hidden');
+            renderer.domElement.style.cursor = 'pointer';
+        } else {
+            tooltip.classList.add('hidden');
+            renderer.domElement.style.cursor = '';
+        }
+    }
+    if (book && event) {
+        tooltip.style.left = `${event.clientX}px`;
+        tooltip.style.top = `${event.clientY}px`;
+    }
+}
+
+function pickBook(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(clickableBooks, true);
+    return hits.length ? hits[0].object.userData.bookRoot : null;
+}
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+    if (isReaderOpen()) return;
+    setHovered(pickBook(event), event);
+});
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+    downPosition = [event.clientX, event.clientY];
+});
+
+renderer.domElement.addEventListener('pointerup', (event) => {
+    if (!downPosition || isReaderOpen()) return;
+    const [dx, dy] = [event.clientX - downPosition[0], event.clientY - downPosition[1]];
+    downPosition = null;
+    if (dx * dx + dy * dy > 25) return; // 拖拽视角不算点击
+    const book = pickBook(event);
+    if (book) openReader(book.userData.category);
+});
+
+// ---------- 主流程 ----------
+async function init() {
+    const [roomGltf, bookcaseAGltf, bookcaseBGltf] = await Promise.all([
+        loadGlb('assets/room.glb'),
+        loadGlb('assets/bookcase_a.glb'),
+        loadGlb('assets/bookcase_b.glb'),
+    ]);
+
+    // 房间：双面渲染（避免从某些角度看墙面背面一片黑）、归一化到 ROOM_SIZE、中心移到原点、地面贴 y=0
+    roomGltf.scene.traverse((node) => {
+        if (!node.isMesh) return;
+        const materials = Array.isArray(node.material) ? node.material : [node.material];
+        for (const mat of materials) {
+            mat.side = THREE.DoubleSide;
+            if ('metalness' in mat) mat.metalness = 0;
+            // 源 MTL 里贴图材质的 Kd 是黑色（Maya 里贴图会覆盖 Kd），
+            // 转到 glTF 后变成 颜色×贴图=黑，这里把带贴图的材质颜色重置为白
+            if (mat.map) mat.color.set(0xffffff);
+        }
+    });
+    const room = roomGltf.scene;
+    const roomBox0 = normalize(room, ROOM_SIZE);
+    const roomCenter = roomBox0.getCenter(new THREE.Vector3());
+    room.position.sub(new THREE.Vector3(roomCenter.x, roomBox0.min.y, roomCenter.z));
+    scene.add(room);
+    const roomBox = bboxOf(room);
+
+    // 书架：归一化高度、上色，靠在沙发墙（-z）两侧、面向房间中央（+z）
+    const bookcaseA = bookcaseAGltf.scene;
+    const bookcaseB = bookcaseBGltf.scene;
+    recolorBookcase(bookcaseA);
+    recolorBookcase(bookcaseB);
+    const localBoxA = normalize(bookcaseA, BOOKCASE_HEIGHT, 'y');
+    const localBoxB = normalize(bookcaseB, BOOKCASE_HEIGHT, 'y');
+    const depthA = localBoxA.max.z - localBoxA.min.z;
+    const depthB = localBoxB.max.z - localBoxB.min.z;
+
+    const wallZ = roomBox.min.z;
+    const SINK = 0.14; // 源模型包围盒底部低于支脚，往下沉一点贴住地板
+    bookcaseA.rotation.y = 0.18;   // 微微转向房间中央
+    bookcaseB.rotation.y = -0.18;
+    bookcaseA.position.set(-3.1, -localBoxA.min.y - SINK, wallZ + depthA / 2 + 0.1);
+    bookcaseB.position.set(3.1, -localBoxB.min.y - SINK, wallZ + depthB / 2 + 0.1);
+    scene.add(bookcaseA, bookcaseB);
+
+    // 把每个类别的书摆上对应书架
+    const shelves = [
+        { bookcase: bookcaseA, localBox: localBoxA },
+        { bookcase: bookcaseB, localBox: localBoxB },
+    ];
+    const perShelf = [0, 1].map((i) => categories.filter((c) => (c.shelf ?? 0) === i));
+    perShelf.forEach((shelfCategories, shelfIndex) => {
+        const { bookcase, localBox } = shelves[shelfIndex];
+        shelfCategories.forEach((category, i) => {
+            placeBook(category, bookcase, localBox, SHELF_LAYOUT[shelfIndex], i, shelfCategories.length);
+        });
+    });
+
+    // 相机：从房间中央望向沙发墙，两个书架在画面两翼（位置由 fitCameraToViewport 按屏幕比例设定）
+    controls.target.set(0, 1.25, -2.0);
+    controls.update();
+
+    document.getElementById('loading').classList.add('done');
+
+    // 调试钩子：截图/调机位用
+    window.__app = { scene, camera, controls, room, bookcaseA, bookcaseB, clickableBooks, THREE };
+}
+
+init().catch((error) => {
+    console.error(error);
+    document.querySelector('.loading-tip').textContent = '加载失败，请刷新重试';
+});
+
+// ---------- 渲染循环 ----------
+window.addEventListener('resize', () => {
+    fitCameraToViewport();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+renderer.setAnimationLoop(() => {
+    controls.update();
+    renderer.render(scene, camera);
+});

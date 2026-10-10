@@ -2,9 +2,58 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026 · Joyce 的小屋</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./vendor/three/three.module.js",
+            "three/addons/": "./vendor/three/addons/"
+        }
+    }
+    </script>
 </head>
 <body>
+    <div id="loading">
+        <div class="loading-title">2026</div>
+        <div class="loading-bar"><div id="loading-progress"></div></div>
+        <div class="loading-tip">正在布置房间…</div>
+    </div>
+
+    <div id="scene-container"></div>
+
+    <div id="hud">
+        <h1 id="hud-title">2026</h1>
+        <p id="hud-sub">点击书架上的书，读读今年的故事</p>
+    </div>
+
+    <div id="book-tooltip" class="hidden"></div>
+
+    <div id="reader-overlay" class="hidden">
+        <div class="reader-book">
+            <button id="reader-close" aria-label="关闭">✕</button>
+            <div class="reader-pages">
+                <div class="page page-left">
+                    <div class="page-photo-wrap">
+                        <img id="page-photo" alt="" class="hidden">
+                        <div id="page-date-big"></div>
+                    </div>
+                </div>
+                <div class="page page-right">
+                    <h2 id="page-title"></h2>
+                    <div id="page-date"></div>
+                    <p id="page-text"></p>
+                </div>
+            </div>
+            <div class="reader-nav">
+                <button id="page-prev" aria-label="上一页">◀</button>
+                <span id="page-indicator"></span>
+                <button id="page-next" aria-label="下一页">▶</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
 </body>
 </html>

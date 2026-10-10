@@ -1,0 +1,9 @@
+# 3D 源文件（体积大，不入库；网页用 assets/ 下转换后的 GLB）
+G1642-maya c4d blender max卡通室内场景/
+*.obj
+*.fbx
+*.mb
+*.max
+*.blend
+*.c4d
+*.hdr
