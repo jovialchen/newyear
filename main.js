@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { categories } from './stories.js';
@@ -21,6 +20,11 @@ const BOOKCASE_COLORS = [
 ];
 const BOOKCASE_DEFAULT_COLOR = 0xb98a55;
 
+// 窗玻璃网格名 -> 涂成晴空蓝（源模型导出时丢了窗外蓝天）
+const WINDOW_GLASS_MESHES = ['meshblinn12SG'];  // 玻璃 -> 晴空蓝
+const WINDOW_SHEER_MESHES = ['meshlambert19SG']; // 窗框+白纱 -> 半透明白
+const SKY_COLOR = 0x4fb0e8;
+
 // ---------- 渲染基础 ----------
 const container = document.getElementById('scene-container');
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -36,27 +40,19 @@ scene.background = new THREE.Color(0xfdf3d8);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
 
-// 窄屏（手机竖屏）拉宽视野并抬高拉远相机，保证两个书架都在画面里
+// 视角固定：窄屏（手机竖屏）拉宽视野并抬高拉远相机，保证两个书架都在画面里
+const CAMERA_TARGET = new THREE.Vector3(0, 1.25, -2.0);
+
 function fitCameraToViewport() {
     const aspect = window.innerWidth / window.innerHeight;
     camera.fov = aspect < 0.8 ? 105 : aspect < 1.2 ? 70 : 50;
     camera.aspect = aspect;
-    camera.updateProjectionMatrix();
     if (aspect < 0.8) camera.position.set(0, 2.1, 3.3);
     else camera.position.set(0, 1.9, 3.0);
+    camera.lookAt(CAMERA_TARGET);
+    camera.updateProjectionMatrix();
 }
 fitCameraToViewport();
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.enablePan = false;
-controls.minDistance = 1.5;
-controls.maxDistance = 7;
-controls.minPolarAngle = 0.7;
-controls.maxPolarAngle = 1.62;
-controls.minAzimuthAngle = -1.2;
-controls.maxAzimuthAngle = 1.2;
 
 scene.add(new THREE.HemisphereLight(0xfff6e0, 0x9a7a55, 1.1));
 const sun = new THREE.DirectionalLight(0xffe8c0, 1.6);
@@ -246,6 +242,24 @@ async function init() {
     scene.add(room);
     const roomBox = bboxOf(room);
 
+    // 窗户涂成晴空蓝（源模型导出时丢了窗外蓝天）：
+    // blinn12SG 是玻璃，涂成无光照晴空蓝；lambert19SG 是窗框+白纱层，纱层变半透明让蓝天透出来
+    room.traverse((node) => {
+        if (!node.isMesh) return;
+        if (WINDOW_GLASS_MESHES.includes(node.name)) {
+            node.material = new THREE.MeshBasicMaterial({ color: SKY_COLOR, side: THREE.DoubleSide });
+        } else if (WINDOW_SHEER_MESHES.includes(node.name)) {
+            node.material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.25,
+                roughness: 0.9,
+                metalness: 0,
+                side: THREE.DoubleSide,
+            });
+        }
+    });
+
     // 书架：归一化高度、上色，靠在沙发墙（-z）两侧、面向房间中央（+z）
     const bookcaseA = bookcaseAGltf.scene;
     const bookcaseB = bookcaseBGltf.scene;
@@ -277,14 +291,10 @@ async function init() {
         });
     });
 
-    // 相机：从房间中央望向沙发墙，两个书架在画面两翼（位置由 fitCameraToViewport 按屏幕比例设定）
-    controls.target.set(0, 1.25, -2.0);
-    controls.update();
-
     document.getElementById('loading').classList.add('done');
 
     // 调试钩子：截图/调机位用
-    window.__app = { scene, camera, controls, room, bookcaseA, bookcaseB, clickableBooks, THREE };
+    window.__app = { scene, camera, room, bookcaseA, bookcaseB, clickableBooks, THREE };
 }
 
 init().catch((error) => {
@@ -299,6 +309,5 @@ window.addEventListener('resize', () => {
 });
 
 renderer.setAnimationLoop(() => {
-    controls.update();
     renderer.render(scene, camera);
 });

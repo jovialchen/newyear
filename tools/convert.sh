@@ -16,7 +16,7 @@ convert() {
   python tools/convert.py "$input" "$raw"
   echo "== gltf-transform: $raw -> $output"
   npx --yes @gltf-transform/cli optimize "$raw" "$output" \
-    --compress meshopt --texture-compress webp --texture-size 1024
+    --compress meshopt --texture-compress webp --texture-size 1024 --palette false
   rm -f "$raw"
 }
 
