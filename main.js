@@ -40,17 +40,21 @@ scene.background = new THREE.Color(0xfdf3d8);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
 
-// 视角固定：机位在没有墙的开放面（-x 靠门一角），斜望房间，门、三面窗户都在画面里。
+// 视角固定：相机在开放面（-x，没有的那面墙）的正中央，视线垂直墙面正对房间。
 // 窄屏（手机竖屏）拉宽视野并抬高拉远相机
-const CAMERA_TARGET = new THREE.Vector3(2.2, 1.1, 2.2);
+const CAMERA_TARGET = new THREE.Vector3(0.5, 1.5, 0);
 
 function fitCameraToViewport() {
     const aspect = window.innerWidth / window.innerHeight;
-    camera.fov = aspect < 0.8 ? 100 : aspect < 1.2 ? 85 : 75;
+    camera.fov = aspect < 0.8 ? 80 : aspect < 1.2 ? 62 : 52;
     camera.aspect = aspect;
-    if (aspect < 0.8) camera.position.set(-5.2, 2.6, -3.2);
-    else camera.position.set(-4.6, 2.4, -2.8);
-    camera.lookAt(CAMERA_TARGET);
+    if (aspect < 0.8) {
+        camera.position.set(-7.2, 2.2, 0);
+        camera.lookAt(0.5, 1.0, 0); // 压低头，少看天花板、补上地面缺口
+    } else {
+        camera.position.set(-6.0, 2.1, 0);
+        camera.lookAt(CAMERA_TARGET);
+    }
     camera.updateProjectionMatrix();
 }
 fitCameraToViewport();
@@ -242,6 +246,15 @@ async function init() {
     room.position.sub(new THREE.Vector3(roomCenter.x, roomBox0.min.y, roomCenter.z));
     scene.add(room);
     const roomBox = bboxOf(room);
+
+    // 地板延伸：拆掉的那面墙到相机之间补一块同色地板，避免画面底部露出背景色
+    const floorExt = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 12),
+        new THREE.MeshStandardMaterial({ color: 0xeccd85, roughness: 1, metalness: 0 }),
+    );
+    floorExt.rotation.x = -Math.PI / 2;
+    floorExt.position.set(roomBox.min.x - 5 + 0.05, 0.005, 0);
+    scene.add(floorExt);
 
     // 窗户涂成晴空蓝（源模型导出时丢了窗外蓝天）：
     // blinn12SG 是玻璃，涂成无光照晴空蓝；lambert19SG 是窗框+白纱层，纱层变半透明让蓝天透出来
