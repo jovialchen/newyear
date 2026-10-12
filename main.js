@@ -125,11 +125,16 @@ function collectBookMeshes(bookcase) {
 }
 
 // categories 按 shelf 分到两个书架，依次绑到书网格上；书比类别多就循环
+// 书同时染成类别颜色，一眼区分主题
 function assignBooks(bookcase, shelfCategories) {
     const books = collectBookMeshes(bookcase);
     books.forEach((mesh, i) => {
         if (!shelfCategories.length) return;
-        mesh.userData.category = shelfCategories[i % shelfCategories.length];
+        const category = shelfCategories[i % shelfCategories.length];
+        mesh.userData.category = category;
+        mesh.material = new THREE.MeshStandardMaterial({
+            color: category.color, roughness: 0.6, metalness: 0.05,
+        });
         clickableMeshes.push(mesh);
     });
 }
@@ -273,11 +278,11 @@ async function init() {
     const localBoxA = normalize(bookcaseA, BOOKCASE_HEIGHT, 'y');
     const localBoxB = normalize(bookcaseB, BOOKCASE_HEIGHT, 'y');
 
-    const SINK = 0.08; // 归一化后包围盒底部略低于支脚，往下沉一点贴住地板
+    const FLOOR_Y = 0.31; // 地板表面高度（射线实测）
     bookcaseA.rotation.y = Math.PI / 2 - 0.25;  // 面向相机，微微转向房间中央
     bookcaseB.rotation.y = Math.PI / 2 + 0.25;
-    bookcaseA.position.set(-2.6, -localBoxA.min.y - SINK, 2.3);
-    bookcaseB.position.set(-2.6, -localBoxB.min.y - SINK, -2.3);
+    bookcaseA.position.set(-2.6, FLOOR_Y - localBoxA.min.y, 2.3);
+    bookcaseB.position.set(-2.6, FLOOR_Y - localBoxB.min.y, -2.3);
     scene.add(bookcaseA, bookcaseB);
 
     // 书架上已有的书变成可交互：每簇书绑一个类别
