@@ -6,7 +6,11 @@ import { openReader, isReaderOpen } from './reader.js';
 
 // ---------- 可调常量 ----------
 const ROOM_SIZE = 10;          // 房间模型归一化后的最长边
-const BOOKCASE_HEIGHT = 1.3;   // 书架归一化后的高度（和其他家具比例协调）
+// 书架高度按"书 ≈ 电视柜上的书（~0.28 高）"反推
+const BOOKCASE_A_HEIGHT = 0.65; // A 是底座+大书堆造型，书偏大，压矮
+const BOOKCASE_B_HEIGHT = 1.05; // B 是立式书架
+const BOOKCASE_A_TILT = -0.15;  // 两个模型本身都后仰，反向扶正（rotation.z）
+const BOOKCASE_B_TILT = -0.2;
 
 // 书架材质名 -> 卡通配色（源模型缺 mtl，按名字上色）
 const BOOKCASE_COLORS = [
@@ -270,19 +274,23 @@ async function init() {
 
     // 门：贴图里深色门板重绘成浅色木纹（tools/repaint_door.py）
 
-    // 书架：归一化高度、上色，摆到前景（开放面一侧）左右两翼，面向相机
+    // 书架：归一化高度、上色、扶正后仰，摆到前景（开放面一侧）左右两翼，面向相机
+    const FLOOR_Y = 0.308; // 地板表面高度（射线实测）
     const bookcaseA = bookcaseAGltf.scene;
     const bookcaseB = bookcaseBGltf.scene;
     recolorBookcase(bookcaseA);
     recolorBookcase(bookcaseB);
-    const localBoxA = normalize(bookcaseA, BOOKCASE_HEIGHT, 'y');
-    const localBoxB = normalize(bookcaseB, BOOKCASE_HEIGHT, 'y');
 
-    const FLOOR_Y = 0.31; // 地板表面高度（射线实测）
-    bookcaseA.rotation.y = Math.PI / 2 - 0.25;  // 面向相机，微微转向房间中央
-    bookcaseB.rotation.y = Math.PI / 2 + 0.25;
-    bookcaseA.position.set(-2.6, FLOOR_Y - localBoxA.min.y, 2.3);
-    bookcaseB.position.set(-2.6, FLOOR_Y - localBoxB.min.y, -2.3);
+    const placeBookcase = (bc, height, tilt, x, z, rotY) => {
+        normalize(bc, height, 'y');
+        bc.rotation.y = rotY;
+        bc.rotation.z = tilt;
+        // 扶正后包围盒变了，重新落地
+        bc.position.set(x, 0, z);
+        bc.position.y = FLOOR_Y - bboxOf(bc).min.y;
+    };
+    placeBookcase(bookcaseA, BOOKCASE_A_HEIGHT, BOOKCASE_A_TILT, -2.6, 2.3, Math.PI / 2 - 0.25);
+    placeBookcase(bookcaseB, BOOKCASE_B_HEIGHT, BOOKCASE_B_TILT, -2.6, -2.3, Math.PI / 2 + 0.25);
     scene.add(bookcaseA, bookcaseB);
 
     // 书架上已有的书变成可交互：每簇书绑一个类别
