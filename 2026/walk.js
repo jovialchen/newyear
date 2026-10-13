@@ -17,32 +17,39 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-// 扁平渐变天空
-function makeSkyTexture() {
-    const c = document.createElement('canvas');
-    c.width = 4;
-    c.height = 512;
-    const ctx = c.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 0, 512);
-    grad.addColorStop(0, '#87c6ef');
-    grad.addColorStop(0.55, '#b8e0f5');
-    grad.addColorStop(0.8, '#e8f5fb');
-    grad.addColorStop(1, '#f4faf2');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 4, 512);
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
+// 扁平渐变天空：白天 ↔ 夜晚可整体渐变（终点放礼花时天黑下来）
+const SKY_STOPS = [0, 0.55, 0.8, 1];
+const SKY_DAY = ['#87c6ef', '#b8e0f5', '#e8f5fb', '#f4faf2'];
+const SKY_NIGHT = ['#04061a', '#0a1330', '#14224a', '#1d3157'];
+const NIGHT_FOG = new THREE.Color(0x0a1322);
+const skyCanvas = document.createElement('canvas');
+skyCanvas.width = 4;
+skyCanvas.height = 512;
+const skyCtx = skyCanvas.getContext('2d');
+const skyTex = new THREE.CanvasTexture(skyCanvas);
+skyTex.colorSpace = THREE.SRGBColorSpace;
+function paintSky(night) {
+    const grad = skyCtx.createLinearGradient(0, 0, 0, 512);
+    for (let i = 0; i < SKY_STOPS.length; i++) {
+        const c = new THREE.Color(SKY_DAY[i]).lerp(new THREE.Color(SKY_NIGHT[i]), night);
+        grad.addColorStop(SKY_STOPS[i], `#${c.getHexString()}`);
+    }
+    skyCtx.fillStyle = grad;
+    skyCtx.fillRect(0, 0, 4, 512);
+    skyTex.needsUpdate = true;
+    scene.fog.color.copy(HAZE_COLOR).lerp(NIGHT_FOG, night);
 }
-scene.background = makeSkyTexture();
+scene.background = skyTex;
 scene.fog = new THREE.Fog(HAZE_COLOR, 55, 170);
+paintSky(0);
 
 // 小 FOV，弱化透视，更接近扁平插画的观感
 const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 400);
 camera.position.set(-6, 3.3, 15.5);
 
 // 灯光只给 VRM 人物用（场景其余部分都是无光照平涂材质）
-scene.add(new THREE.HemisphereLight(0xffffff, 0x9ab884, 1.25));
+const hemi = new THREE.HemisphereLight(0xffffff, 0x9ab884, 1.25);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff6e0, 1.6);
 sun.position.set(-30, 50, 20);
 scene.add(sun);
@@ -113,6 +120,35 @@ const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.5);
 const curveLength = curve.getLength();
 const END_POS = curve.getPointAt(1);
 
+// 铺面用的延长曲线：路在起点之前和 2027 之后都继续延伸、不截断，
+// 但人物行走的进度仍只按主曲线计算（从一月走到十二月尽头就停下）
+const ribbonPts = curve.getPoints(500);
+let headLen = 0; // 起点之前那段延长线的长度
+{
+    const startTan = curve.getTangentAt(0);
+    const startSide = new THREE.Vector3(-startTan.z, 0, startTan.x);
+    const start = curve.getPointAt(0);
+    const head = [];
+    for (let i = 1; i <= 6; i++) {
+        head.push(start.clone()
+            .addScaledVector(startTan, -i * 16)
+            .addScaledVector(startSide, Math.sin(i * 0.9) * 3.5));
+    }
+    head.reverse(); // 由远及近，接到主曲线起点
+    for (let i = 1; i < head.length; i++) headLen += head[i].distanceTo(head[i - 1]);
+    headLen += start.distanceTo(head[head.length - 1]);
+    ribbonPts.unshift(...head);
+
+    const endTan = curve.getTangentAt(1);
+    const endSide = new THREE.Vector3(-endTan.z, 0, endTan.x);
+    for (let i = 1; i <= 6; i++) {
+        ribbonPts.push(END_POS.clone()
+            .addScaledVector(endTan, i * 16)
+            .addScaledVector(endSide, Math.sin(i * 0.9) * 3.5));
+    }
+}
+const ribbonCurve = new THREE.CatmullRomCurve3(ribbonPts, false, 'catmullrom', 0.5);
+
 function sideVectorAt(t) {
     const tan = curve.getTangentAt(t);
     return new THREE.Vector3(-tan.z, 0, tan.x).normalize();
@@ -124,7 +160,7 @@ function tAtX(x) {
 
 // ---------- 地面（颜色随月份渐变） ----------
 {
-    const geo = new THREE.PlaneGeometry(620, 500, 64, 40);
+    const geo = new THREE.PlaneGeometry(END_POS.x + 480, 500, 64, 40);
     geo.rotateX(-Math.PI / 2);
     const centerX = END_POS.x / 2;
     const colors = [];
@@ -144,15 +180,16 @@ function tAtX(x) {
     scene.add(ground);
 }
 
-// ---------- 路面（沿曲线的平涂条带） ----------
-function buildRibbon(width, y, color) {
-    const segments = 700;
+// ---------- 路面（沿延长曲线铺设的平涂条带，2027 之后路还在继续） ----------
+function buildRibbon(width, y, color, targetCurve) {
+    const segments = 900;
     const positions = [];
     const indices = [];
     for (let i = 0; i <= segments; i++) {
         const t = i / segments;
-        const p = curve.getPointAt(t);
-        const s = sideVectorAt(t).multiplyScalar(width / 2);
+        const p = targetCurve.getPointAt(t);
+        const tan = targetCurve.getTangentAt(t);
+        const s = new THREE.Vector3(-tan.z, 0, tan.x).normalize().multiplyScalar(width / 2);
         positions.push(p.x - s.x, y, p.z - s.z, p.x + s.x, y, p.z + s.z);
         if (i < segments) {
             const a = i * 2;
@@ -164,8 +201,8 @@ function buildRibbon(width, y, color) {
     geo.setIndex(indices);
     return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color }));
 }
-scene.add(buildRibbon(3.4, 0.015, 0xb99a6b)); // 深色路缘
-scene.add(buildRibbon(2.6, 0.03, 0xeedcae));  // 浅色路面
+scene.add(buildRibbon(3.4, 0.015, 0xb99a6b, ribbonCurve)); // 深色路缘
+scene.add(buildRibbon(2.6, 0.03, 0xeedcae, ribbonCurve));  // 浅色路面
 
 // ---------- 扁平纸片景物 ----------
 // 所有需要面向相机的物体（树、草、花、云）都登记到这里
@@ -298,6 +335,31 @@ scatter(makeGrassTuft, 170, 2.5, 14, [0.8, 1.6], { seasons: ['spring', 'summer',
 scatter(makeFlower, 90, 2.6, 7, [0.8, 1.3], { seasons: ['spring', 'summer'] });
 scatter(makeFlower, 50, 7, 13, [0.9, 1.4], { seasons: ['spring', 'summer'], side: 'near' });
 
+// 起点之前和 2027 之后的路段：路旁继续有些落雪的树，越远越揉进天色，路才不会戛然而止
+{
+    const ribbonLen = ribbonCurve.getLength();
+    const uHead = headLen / ribbonLen;                  // 主曲线起点在延长曲线上的位置
+    const uTail = (headLen + curveLength) / ribbonLen;  // 主曲线终点的位置
+    const plantBeyond = (uLo, uHi, fracOf) => {
+        for (let i = 0; i < 14; i++) {
+            const u = uLo + ((i + 0.5) / 14) * (uHi - uLo);
+            const p = ribbonCurve.getPointAt(u);
+            const tan = ribbonCurve.getTangentAt(u);
+            const side = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+            let sign = Math.random() < 0.5 ? -1 : 1;
+            if (side.z * sign > 0) sign = -sign; // 远侧，不挡人物
+            const tree = makeTree('winter', 0.2 + fracOf(u) * 0.55);
+            const dist = 4.5 + Math.random() * 16;
+            tree.scale.setScalar(1.1 + Math.random() * 1.3);
+            tree.position.set(p.x + side.x * sign * dist, 0, p.z + side.z * sign * dist);
+            scene.add(tree);
+            billboards.push(tree);
+        }
+    };
+    plantBeyond(0, uHead, (u) => (uHead - u) / uHead);
+    plantBeyond(uTail, 1, (u) => (u - uTail) / (1 - uTail));
+}
+
 // ---------- 远山（路的远侧背景剪影，压扁的椭圆山包，随机分布留有空隙） ----------
 {
     const hillColors = [0xb9d4c8, 0xa9cdbd, 0xc9ded3];
@@ -382,6 +444,69 @@ const snowSpeeds = [];
         color: 0xffffff, size: 0.22, map: dotTex, transparent: true, opacity: 0.95, depthWrite: false,
     }));
     scene.add(snow);
+}
+
+// 星星：白天隐没，入夜后在终点方向的夜空浮现
+let starMat = null;
+{
+    const count = 240;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+        positions[i * 3] = END_POS.x - 130 + Math.random() * 260;
+        positions[i * 3 + 1] = 10 + Math.random() * 48;
+        positions[i * 3 + 2] = -25 - Math.random() * 120;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starMat = new THREE.PointsMaterial({
+        color: 0xfff4d0, size: 0.55, map: dotTex, transparent: true, opacity: 0,
+        depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    });
+    scene.add(new THREE.Points(geo, starMat));
+}
+
+// ---------- 月亮（2026 年 12 月 31 日的月相：下弦月，月龄 22 天，照亮约 47%，左半边亮） ----------
+let moonMat = null;
+{
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const ctx = c.getContext('2d');
+    const cx = 128, cy = 128, r = 72;
+    // 光晕
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, 128);
+    glow.addColorStop(0, 'rgba(255, 244, 200, 0.45)');
+    glow.addColorStop(1, 'rgba(255, 244, 200, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, 256, 256);
+    // 暗面（淡淡地透出轮廓）
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(30, 40, 70, 0.5)';
+    ctx.fill();
+    // 亮面：亏月下弦 → 左半亮，晨昏线微微向左鼓（照亮比例 0.47 → 鼓出 (1-2×0.47)r）
+    const rx = (1 - 2 * 0.47) * r;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, Math.PI / 2, Math.PI * 1.5);           // 左半圆（下→左→上）
+    ctx.ellipse(cx, cy, rx, r, 0, -Math.PI / 2, Math.PI / 2, true); // 晨昏线（上→左→下）
+    ctx.fillStyle = '#fff6d8';
+    ctx.fill();
+    // 环形山（只在亮面一侧）
+    ctx.fillStyle = 'rgba(214, 200, 160, 0.8)';
+    for (const [mx, my, mr] of [[-30, -18, 9], [-13, 22, 6], [-44, 14, 5]]) {
+        ctx.beginPath();
+        ctx.arc(cx + mx, cy + my, mr, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    moonMat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, opacity: 0, depthWrite: false, fog: false,
+    });
+    moonMat.userData.keepAtNight = true; // 夜里也保持发亮
+    const moon = new THREE.Mesh(new THREE.PlaneGeometry(11, 11), moonMat);
+    moon.position.set(END_POS.x + 16, 17, -55);
+    scene.add(moon);
+    billboards.push(moon);
 }
 
 function updateSnow(dt) {
@@ -723,10 +848,9 @@ EVENTS.forEach((ev, i) => {
     ctx.fillText('2027 新年快乐', 512, 128);
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
-    const sign = new THREE.Mesh(
-        new THREE.PlaneGeometry(10, 2.5),
-        new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
-    );
+    const signMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
+    signMat.userData.keepAtNight = true; // 天黑后仍保持发亮
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(10, 2.5), signMat);
     sign.position.set(END_POS.x, 3.6, END_POS.z);
     scene.add(sign);
 }
@@ -734,15 +858,18 @@ EVENTS.forEach((ev, i) => {
 // ---------- 烟花 ----------
 const fireworks = [];
 let fireworkTimer = 0;
+// 终点演出的状态：停下 → 转身背对屏幕 → 天黑 → 放礼花
+const finale = { time: 0, turnFrom: 0, turnTo: 0, fireworksStarted: false, away: new THREE.Vector3(0, 0, -1) };
 function spawnBurst() {
-    const count = 90;
+    const count = 110;
     const positions = new Float32Array(count * 3);
     const velocities = [];
-    const center = new THREE.Vector3(
-        END_POS.x + (Math.random() - 0.5) * 18,
-        6 + Math.random() * 7,
-        END_POS.z + (Math.random() - 0.5) * 14,
-    );
+    // 礼花在人物前方（她背对镜头望去的方向）的夜空里炸开
+    const side = new THREE.Vector3(-finale.away.z, 0, finale.away.x);
+    const center = character.position.clone()
+        .addScaledVector(finale.away, 18 + Math.random() * 16)
+        .addScaledVector(side, (Math.random() - 0.5) * 20);
+    center.y = 6 + Math.random() * 7;
     for (let i = 0; i < count; i++) {
         positions[i * 3] = center.x;
         positions[i * 3 + 1] = center.y;
@@ -785,9 +912,48 @@ function updateFireworks(dt) {
     }
 }
 
+// ---------- 入夜：天空/雾/灯光/所有平涂材质整体变暗 ----------
+// 收集所有可变暗的材质（烟花、星星、光晕等加法混合的除外，越夜越亮）
+const nightMats = [];
+scene.traverse((o) => {
+    if (!o.material) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) {
+        if (m.blending === THREE.AdditiveBlending || !m.color || m.userData.keepAtNight) continue;
+        m.userData.dayColor = m.color.clone();
+        nightMats.push(m);
+    }
+});
+
+let night = 0; // 0 = 白天，1 = 夜晚
+let nightTarget = 0;
+let lastAppliedNight = -1;
+function applyNight(n) {
+    paintSky(n);
+    for (const m of nightMats) {
+        m.color.copy(m.userData.dayColor).multiplyScalar(1 - 0.74 * n);
+    }
+    hemi.intensity = 1.25 * (1 - 0.7 * n);
+    sun.intensity = 1.6 * (1 - 0.85 * n);
+    if (starMat) starMat.opacity = n * 0.95;
+    if (moonMat) moonMat.opacity = n;
+}
+
+// 最短路径的角度插值（转身用）
+function lerpAngle(a, b, t) {
+    let d = (b - a) % (Math.PI * 2);
+    if (d > Math.PI) d -= Math.PI * 2;
+    if (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+}
+
 // ---------- 状态机与 UI ----------
-let state = 'loading'; // loading → ready → walking ⇄ paused → finished
+let state = 'loading'; // loading → ready → walking ⇄ paused → finale → finished
 let progress = 0;
+
+// 人物转身后凝望的天空方向（VRM 视线目标）
+const skyGaze = new THREE.Object3D();
+scene.add(skyGaze);
 
 const $ = (id) => document.getElementById(id);
 const ui = {
@@ -851,8 +1017,18 @@ function arriveAt(marker) {
 }
 
 function finish() {
-    state = 'finished';
-    setTimeout(() => ui.endScreen.classList.remove('hidden'), 1600);
+    state = 'finale';
+    finale.time = 0;
+    finale.fireworksStarted = false;
+    finale.turnFrom = character.rotation.y;
+    // 背对屏幕：镜头始终在人物 +z 一侧，所以"背对"就是面向 -z，
+    // 再稍微偏向路的前方（2027 与礼花的方向）。不取 camera.position，
+    // 因为跳转进度后相机还在平滑跟随途中，方向不可靠。
+    const tan = curve.getTangentAt(Math.min(progress, 1));
+    const away = new THREE.Vector3(0, 0, -1).addScaledVector(tan, 0.45).normalize();
+    finale.away.copy(away);
+    finale.turnTo = Math.atan2(away.x, away.z);
+    if (vrm && vrm.lookAt) vrm.lookAt.target = skyGaze;
 }
 
 // ---------- 进度条：可拖动跳转，站点圆点直达 ----------
@@ -870,6 +1046,10 @@ function jumpTo(t) {
     ui.eventCard.classList.add('hidden');
     ui.endScreen.classList.add('hidden');
     ui.progressFill.style.width = `${Math.round(progress * 100)}%`;
+    // 从终点演出跳回：天重新亮起来，视线重新看向镜头
+    nightTarget = 0;
+    finale.fireworksStarted = false;
+    if (vrm && vrm.lookAt) vrm.lookAt.target = camera;
     state = 'walking';
 }
 
@@ -947,15 +1127,49 @@ function tick() {
     const tan = curve.getTangentAt(t);
     character.position.x = p.x;
     character.position.z = p.z;
-    character.rotation.y = Math.atan2(tan.x, tan.z);
+    if (state !== 'finale' && state !== 'finished') {
+        character.rotation.y = Math.atan2(tan.x, tan.z);
+    }
     animateCharacter(dt, walking, time);
     if (vrm) vrm.update(dt);
+
+    // 终点演出：停下 → 转身背对屏幕 → 天黑 → 放礼花
+    if (state === 'finale') {
+        finale.time += dt;
+        const k = THREE.MathUtils.clamp((finale.time - 0.5) / 1.5, 0, 1);
+        character.rotation.y = lerpAngle(finale.turnFrom, finale.turnTo, k * k * (3 - 2 * k));
+        if (finale.time > 1.0) nightTarget = 1;
+        if (finale.time > 2.3) finale.fireworksStarted = true;
+        if (finale.time > 5.4) {
+            state = 'finished';
+            ui.endScreen.classList.remove('hidden');
+        }
+    }
+    if (state === 'finale' || state === 'finished') {
+        skyGaze.position.copy(character.position).addScaledVector(finale.away, 10);
+        skyGaze.position.y = 5.5;
+    }
+
+    // 昼夜渐变（拖动进度条跳回时会重新天亮）
+    if (night !== nightTarget) {
+        night = THREE.MathUtils.clamp(
+            night + Math.sign(nightTarget - night) * dt / (nightTarget > night ? 2.8 : 1.2),
+            0, 1,
+        );
+    }
+    if (Math.abs(night - lastAppliedNight) > 0.0004) {
+        applyNight(night);
+        lastAppliedNight = night;
+    }
 
     // 侧视角相机：固定在路的 +z 一侧，平移跟随人物（停顿时视线转向路牌）
     let lookGoal;
     if (state === 'paused') {
         const m = markers.find((mk) => mk.triggered && mk.t === progress);
         lookGoal = m ? m.group.position.clone().setY(1.3) : p.clone().add(tan.clone().multiplyScalar(2)).setY(1.4);
+    } else if (state === 'finale' || state === 'finished') {
+        // 视线随她转向夜空，入夜后稍微抬高看礼花
+        lookGoal = p.clone().addScaledVector(finale.away, 4).setY(1.4 + night * 2.4);
     } else {
         lookGoal = p.clone().add(tan.clone().multiplyScalar(2)).setY(1.4);
     }
@@ -986,11 +1200,11 @@ function tick() {
         }
     }
 
-    if (state === 'finished') {
+    if (state === 'finished' || finale.fireworksStarted) {
         fireworkTimer -= dt;
         if (fireworkTimer <= 0) {
             spawnBurst();
-            fireworkTimer = 1.0 + Math.random() * 0.5;
+            fireworkTimer = 0.8 + Math.random() * 0.5;
         }
     }
     updateFireworks(dt);
