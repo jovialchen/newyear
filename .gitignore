@@ -1,9 +1,9 @@
-# 3D 源文件（体积大，不入库；网页用 assets/ 下转换后的 GLB）
-G1642-maya c4d blender max卡通室内场景/
-*.obj
-*.fbx
-*.mb
-*.max
-*.blend
-*.c4d
-*.hdr
+# 未被页面使用的大型素材，保留在本地，不入库
+2026/assets/plants/
+2026/assets/obj-c1871/
+2026/assets/buildings/
+2026/assets/shrubs/
+
+# 素材包附带的广告/说明文件
+2026/assets/nature-pack/说明/
+2026/assets/trees/二彩神素材说明/

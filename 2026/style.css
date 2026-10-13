@@ -1,0 +1,213 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Kalam', 'PingFang SC', 'Microsoft YaHei', cursive, sans-serif;
+    background: #cfe3ee;
+}
+
+canvas {
+    display: block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ---------- 加载画面 ---------- */
+#loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #2c4a3e 0%, #5b8a6f 60%, #cfe3ee 100%);
+    color: #fff;
+    z-index: 30;
+}
+
+.loading-title {
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+    margin-bottom: 1rem;
+}
+
+#loading-text {
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+/* ---------- 开始 / 终点画面 ---------- */
+#start-screen, #end-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 40, 32, 0.45);
+    backdrop-filter: blur(3px);
+    z-index: 20;
+    color: #fff;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.start-title, .end-title {
+    font-size: clamp(2rem, 7vw, 3.4rem);
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.1em;
+}
+
+.start-subtitle, .end-subtitle {
+    font-size: clamp(1rem, 3.5vw, 1.25rem);
+    opacity: 0.92;
+    margin-bottom: 2.2rem;
+}
+
+.end-greeting {
+    font-family: 'Great Vibes', 'Kalam', cursive;
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    color: #ffe9a3;
+    text-shadow: 0 0 18px rgba(255, 220, 120, 0.7);
+    margin-bottom: 2.2rem;
+}
+
+.big-btn {
+    font-family: inherit;
+    font-size: 1.15rem;
+    padding: 0.85rem 2.6rem;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffb347, #ff7e5f);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(255, 126, 95, 0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.big-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 10px 30px rgba(255, 126, 95, 0.55);
+}
+
+.big-btn:active {
+    transform: scale(0.97);
+}
+
+/* ---------- 事件卡片 ---------- */
+#event-card {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.card {
+    pointer-events: auto;
+    width: min(430px, 94vw);
+    max-height: 78vh;
+    overflow-y: auto;
+    background: rgba(255, 252, 246, 0.97);
+    border-radius: 18px;
+    padding: 1.1rem 1.3rem 1.3rem;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    animation: card-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(46px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#card-photo-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #a8c8a8, #7ba889);
+    margin-bottom: 0.8rem;
+}
+
+#card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+#card-photo-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+#card-date {
+    font-size: 0.85rem;
+    color: #a08050;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.25rem;
+}
+
+#card-title {
+    font-size: 1.35rem;
+    color: #3c3226;
+    margin-bottom: 0.55rem;
+}
+
+#card-desc {
+    font-size: 0.98rem;
+    line-height: 1.75;
+    color: #5a5148;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+}
+
+#card-counter {
+    margin-top: 0.7rem;
+    font-size: 0.8rem;
+    color: #b0a48e;
+    letter-spacing: 0.15em;
+}
+
+/* ---------- 顶部进度条 ---------- */
+#progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    z-index: 25;
+}
+
+#progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffb347, #ff7e5f);
+    transition: width 0.4s ease;
+}

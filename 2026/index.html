@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026 · 林间小路</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+            "@pixiv/three-vrm": "https://unpkg.com/@pixiv/three-vrm@3.4.2/lib/three-vrm.module.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- 加载画面 -->
+    <div id="loading">
+        <p class="loading-title">2026 · 林间小路</p>
+        <p id="loading-text">正在走进森林…</p>
+    </div>
+
+    <!-- 开始画面 -->
+    <div id="start-screen" class="hidden">
+        <h1 class="start-title">2026 · 林间小路</h1>
+        <p class="start-subtitle">沿着森林里的小路，走过这一年的点点滴滴</p>
+        <button id="start-btn" class="big-btn">开始旅程</button>
+    </div>
+
+    <!-- 事件卡片 -->
+    <div id="event-card" class="hidden">
+        <div class="card">
+            <div id="card-photo-wrap">
+                <img id="card-photo" alt="">
+                <div id="card-photo-placeholder">📷</div>
+            </div>
+            <p id="card-date"></p>
+            <h2 id="card-title"></h2>
+            <p id="card-desc"></p>
+            <button id="continue-btn" class="big-btn">继续往前走 →</button>
+            <p id="card-counter"></p>
+        </div>
+    </div>
+
+    <!-- 终点画面 -->
+    <div id="end-screen" class="hidden">
+        <h1 class="end-title">走到了 2026 的尽头</h1>
+        <p class="end-subtitle">谢谢这一年的所有风景</p>
+        <p class="end-greeting">✨ 2027 新年快乐 ✨</p>
+        <button id="restart-btn" class="big-btn">再走一遍</button>
+    </div>
+
+    <!-- 顶部进度条 -->
+    <div id="progress"><div id="progress-fill"></div></div>
+
+    <script type="module" src="walk.js"></script>
+</body>
+</html>
