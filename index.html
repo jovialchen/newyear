@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们的年度小路</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #87c6ef 0%, #b8e0f5 55%, #e8f5fb 80%, #f4faf2 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 扁平纸云朵 */
+        .cloud {
+            position: absolute;
+            background: #fff;
+            border-radius: 999px;
+            opacity: 0.9;
+            animation: drift linear infinite;
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .cloud.c1 { width: 180px; height: 54px; top: 12%; left: -200px; animation-duration: 55s; }
+        .cloud.c1::before { width: 80px; height: 80px; top: -40px; left: 28px; }
+        .cloud.c1::after { width: 56px; height: 56px; top: -26px; right: 30px; }
+        .cloud.c2 { width: 130px; height: 40px; top: 26%; left: -160px; animation-duration: 75s; animation-delay: -30s; }
+        .cloud.c2::before { width: 60px; height: 60px; top: -30px; left: 22px; }
+        .cloud.c2::after { width: 42px; height: 42px; top: -20px; right: 22px; }
+
+        @keyframes drift {
+            to { transform: translateX(calc(100vw + 400px)); }
+        }
+
+        /* 草地 */
+        .grass {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 22vh;
+            background: #7fc465;
+            border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        h1 {
+            color: #3a5a6a;
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            letter-spacing: 0.25em;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #5a7a8a;
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
+            margin-bottom: 3rem;
+            letter-spacing: 0.1em;
+        }
+
+        .years {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .year-card {
+            display: block;
+            width: min(300px, 82vw);
+            padding: 2.2rem 1.5rem 1.8rem;
+            background: rgba(255, 252, 246, 0.95);
+            border-radius: 22px;
+            text-decoration: none;
+            box-shadow: 0 10px 32px rgba(58, 90, 106, 0.18);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .year-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 18px 44px rgba(58, 90, 106, 0.26);
+        }
+
+        .year-card:active {
+            transform: scale(0.98);
+        }
+
+        .year-num {
+            font-size: 3.6rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.7rem;
+            letter-spacing: 0.05em;
+        }
+
+        .y2025 .year-num { color: #ff7e5f; }
+        .y2026 .year-num { color: #4fae8e; }
+
+        .year-name {
+            font-size: 1.05rem;
+            color: #3c3226;
+            margin-bottom: 0.35rem;
+            font-weight: 700;
+        }
+
+        .year-desc {
+            font-size: 0.85rem;
+            color: #8a8078;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="grass"></div>
+
+    <main>
+        <h1>我们的年度小路</h1>
+        <p class="subtitle">选一年，进去走走</p>
+        <div class="years">
+            <a class="year-card y2025" href="2025/index.html">
+                <div class="year-num">2025</div>
+                <div class="year-name">年度时光轴</div>
+                <div class="year-desc">一整年的照片与故事，走向 2026 的新年祝福</div>
+            </a>
+            <a class="year-card y2026" href="2026/index.html">
+                <div class="year-num">2026</div>
+                <div class="year-name">林间小路</div>
+                <div class="year-desc">沿着森林里的小路，走过这一年的点点滴滴</div>
+            </a>
+        </div>
+    </main>
+</body>
+</html>
