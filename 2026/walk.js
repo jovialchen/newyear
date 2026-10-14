@@ -213,28 +213,47 @@ function flatMat(color, opts = {}) {
 }
 
 // 树冠：几个圆拼成的云朵形 + 错位深色纸片层（制造层次）
+const CANOPY_BLOBS = [
+    [0, 1.55, 1.05],
+    [-0.85, 1.15, 0.72],
+    [0.85, 1.2, 0.78],
+    [-0.42, 1.98, 0.62],
+    [0.45, 2.02, 0.6],
+];
+
 function makeCanopy(colorHex) {
     const g = new THREE.Group();
-    const blobs = [
-        [0, 1.55, 1.05],
-        [-0.85, 1.15, 0.72],
-        [0.85, 1.2, 0.78],
-        [-0.42, 1.98, 0.62],
-        [0.45, 2.02, 0.6],
-    ];
     const shadowMat = flatMat(new THREE.Color(colorHex).multiplyScalar(0.8));
-    for (const [x, y, r] of blobs) {
+    for (const [x, y, r] of CANOPY_BLOBS) {
         const m = new THREE.Mesh(new THREE.CircleGeometry(r, 20), shadowMat);
         m.position.set(x + 0.16, y - 0.16, -0.02);
         g.add(m);
     }
     const mat = flatMat(colorHex);
-    for (const [x, y, r] of blobs) {
+    for (const [x, y, r] of CANOPY_BLOBS) {
         const m = new THREE.Mesh(new THREE.CircleGeometry(r, 20), mat);
         m.position.set(x, y, 0);
         g.add(m);
     }
     return g;
+}
+
+// 秋天的树结果子：每棵树只结一种果子（苹果 / 橘子 / 桃子），不同的树果子不同
+const FRUIT_COLORS = [0xe04b3a, 0xf28c28, 0xffb3a0];
+function addFruits(canopy) {
+    const fruitColor = FRUIT_COLORS[Math.floor(Math.random() * FRUIT_COLORS.length)];
+    const n = 3 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+        const [bx, by, br] = CANOPY_BLOBS[Math.floor(Math.random() * CANOPY_BLOBS.length)];
+        const a = Math.random() * Math.PI * 2;
+        const rr = Math.random() * br * 0.72;
+        const f = new THREE.Mesh(
+            new THREE.CircleGeometry(0.09 + Math.random() * 0.04, 10),
+            flatMat(fruitColor),
+        );
+        f.position.set(bx + Math.cos(a) * rr, by + Math.sin(a) * rr, 0.015);
+        canopy.add(f);
+    }
 }
 
 function makeTrunk() {
@@ -256,7 +275,10 @@ function makeTree(season, haze = 0) {
     if (haze > 0) color.lerp(HAZE_COLOR, haze);
     const g = new THREE.Group();
     g.add(makeTrunk());
-    g.add(makeCanopy(color));
+    const canopy = makeCanopy(color);
+    g.add(canopy);
+    // 秋天的近景树大多会结果子（远景揉进天色的树就不点了）
+    if (season === 'autumn' && haze <= 0.3 && Math.random() < 0.65) addFruits(canopy);
     return g;
 }
 
@@ -296,6 +318,76 @@ function makeFlower() {
     return g;
 }
 
+// 雪人：冬天雪地上的装饰。每个雪人都不一样——围巾颜色、鼻子朝向、
+// 手臂姿势、有没有帽子、身材比例都随机
+const SCARF_COLORS = [0xe05d5d, 0x5a8fd0, 0xf0a03c];
+function makeSnowman() {
+    const g = new THREE.Group();
+    const add = (geo, color, x, y, z = 0, rz = 0) => {
+        const m = new THREE.Mesh(geo, flatMat(color));
+        m.position.set(x, y, z);
+        if (rz) m.rotation.z = rz;
+        g.add(m);
+        return m;
+    };
+    const bodyR = 0.56 * (0.92 + Math.random() * 0.16);
+    const headR = 0.38 * (0.9 + Math.random() * 0.2);
+    const headY = 0.52 + bodyR * 0.55 + headR * 0.75;
+    const body = [[0, 0.52, bodyR], [0, headY, headR]];
+    for (const [x, y, r] of body) add(new THREE.CircleGeometry(r, 20), 0xd9e6ef, x + 0.07, y - 0.07, -0.02);
+    for (const [x, y, r] of body) add(new THREE.CircleGeometry(r, 20), 0xf8fcff, x, y);
+    // 树枝手臂：内端深深插进身体里（放在前层，和围巾眼睛同一深度，不会闪面），
+    // 无论手臂怎么翘、雪球胖瘦如何，内端都始终在雪球轮廓之内
+    const armAngleL = 0.25 + Math.random() * 0.25;
+    const armAngleR = 0.25 + Math.random() * 0.25;
+    add(new THREE.PlaneGeometry(0.7, 0.06), 0x8a5a30, -0.55, 0.72, 0.02, armAngleL);
+    add(new THREE.PlaneGeometry(0.7, 0.06), 0x8a5a30, 0.55, 0.72, 0.02, -armAngleR);
+    // 围巾 + 垂下来的一截
+    const scarf = SCARF_COLORS[Math.floor(Math.random() * SCARF_COLORS.length)];
+    add(new THREE.PlaneGeometry(headR * 1.7, 0.15), scarf, 0, headY - headR * 0.7, 0.01);
+    add(new THREE.PlaneGeometry(0.15, 0.34), scarf, 0.16, headY - headR * 0.7 - 0.2, 0.01, -0.12);
+    // 眼睛 / 胡萝卜鼻子（朝左或朝右）/ 纽扣
+    add(new THREE.CircleGeometry(0.045, 10), 0x3a3230, -0.13, headY + 0.12, 0.01);
+    add(new THREE.CircleGeometry(0.045, 10), 0x3a3230, 0.13, headY + 0.12, 0.01);
+    const nose = new THREE.Shape();
+    nose.moveTo(0, 0.05);
+    nose.lineTo(0.3, 0);
+    nose.lineTo(0, -0.05);
+    nose.closePath();
+    const noseDir = Math.random() < 0.5 ? 1 : -1;
+    add(new THREE.ShapeGeometry(nose), 0xf2822a, 0.03 * noseDir, headY, 0.01, noseDir < 0 ? Math.PI : 0);
+    const buttons = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < buttons; i++) {
+        add(new THREE.CircleGeometry(0.05, 10), 0x3a3230, 0, 0.62 - i * 0.2, 0.01);
+    }
+    // 一半的雪人戴小帽子
+    if (Math.random() < 0.5) {
+        const hatTilt = (Math.random() - 0.5) * 0.3;
+        add(new THREE.PlaneGeometry(headR * 1.5, 0.09), 0x4a4038, 0, headY + headR * 0.78, 0.01, hatTilt);
+        add(new THREE.PlaneGeometry(headR * 0.95, 0.3), 0x4a4038, 0, headY + headR * 0.78 + 0.18, 0.01, hatTilt);
+    }
+    return g;
+}
+
+// 蘑菇：秋天草地上的装饰
+function makeMushroom() {
+    const g = new THREE.Group();
+    const add = (geo, color, x, y, z = 0) => {
+        const m = new THREE.Mesh(geo, flatMat(color));
+        m.position.set(x, y, z);
+        g.add(m);
+        return m;
+    };
+    const capColor = [0xd94f3d, 0xe07b39, 0xc94f5a][Math.floor(Math.random() * 3)];
+    // 柄
+    add(new THREE.PlaneGeometry(0.2, 0.34), 0xfff3dd, 0, 0.17);
+    // 伞盖（半圆）+ 白点点
+    add(new THREE.CircleGeometry(0.38, 20, 0, Math.PI), capColor, 0, 0.3, 0.01);
+    add(new THREE.CircleGeometry(0.05, 8), 0xfff6e6, -0.14, 0.44, 0.02);
+    add(new THREE.CircleGeometry(0.04, 8), 0xfff6e6, 0.1, 0.52, 0.02);
+    add(new THREE.CircleGeometry(0.035, 8), 0xfff6e6, 0.2, 0.36, 0.02);
+    return g;
+}
 // 沿路散布。opts.seasons 限定出现的季节；opts.side='far' 只放路的远侧（不挡人物）
 function scatter(makeFn, count, minDist, maxDist, scaleRange, opts = {}) {
     let placed = 0;
@@ -334,6 +426,27 @@ scatter(makeGrassTuft, 220, 2.6, 10, [0.7, 1.4], { seasons: ['spring', 'summer',
 scatter(makeGrassTuft, 170, 2.5, 14, [0.8, 1.6], { seasons: ['spring', 'summer', 'autumn'], side: 'near' });
 scatter(makeFlower, 90, 2.6, 7, [0.8, 1.3], { seasons: ['spring', 'summer'] });
 scatter(makeFlower, 50, 7, 13, [0.9, 1.4], { seasons: ['spring', 'summer'], side: 'near' });
+// 雪人固定站在开头一月的雪地上（地面雪白但空空的那段路，一远一近）
+{
+    const spots = [
+        { t: 0.045, near: false, dist: 4.2, scale: 1.15 },
+        { t: 0.09, near: true, dist: 3.4, scale: 0.85 },
+    ];
+    for (const spot of spots) {
+        const p = curve.getPointAt(spot.t);
+        const dir = sideVectorAt(spot.t);
+        // 远侧 = z 更小的一侧（不挡人物）；近侧相反
+        if (spot.near ? dir.z < 0 : dir.z > 0) dir.negate();
+        const snowman = makeSnowman();
+        snowman.scale.setScalar(spot.scale);
+        snowman.position.set(p.x + dir.x * spot.dist, 0, p.z + dir.z * spot.dist);
+        scene.add(snowman);
+        billboards.push(snowman);
+    }
+}
+// 秋天的草地上长蘑菇
+scatter(makeMushroom, 45, 2.6, 8, [0.6, 1.15], { seasons: ['autumn'] });
+scatter(makeMushroom, 25, 2.5, 9, [0.55, 1.0], { seasons: ['autumn'], side: 'near' });
 
 // 起点之前和 2027 之后的路段：路旁继续有些落雪的树，越远越揉进天色，路才不会戛然而止
 {
@@ -360,6 +473,22 @@ scatter(makeFlower, 50, 7, 13, [0.9, 1.4], { seasons: ['spring', 'summer'], side
     plantBeyond(uTail, 1, (u) => (u - uTail) / (1 - uTail));
 }
 
+// 终点牌旁边也站一个雪人，陪着一起跨年
+{
+    const endTan = curve.getTangentAt(1);
+    const endSide = new THREE.Vector3(-endTan.z, 0, endTan.x).normalize();
+    if (endSide.z > 0) endSide.negate(); // 路的远侧，不挡人物
+    const snowman = makeSnowman();
+    snowman.scale.setScalar(1.25);
+    snowman.position.set(
+        END_POS.x + endSide.x * 3.4,
+        0,
+        END_POS.z + endSide.z * 3.4,
+    );
+    scene.add(snowman);
+    billboards.push(snowman);
+}
+
 // ---------- 远山（路的远侧背景剪影，压扁的椭圆山包，随机分布留有空隙） ----------
 {
     const hillColors = [0xb9d4c8, 0xa9cdbd, 0xc9ded3];
@@ -380,11 +509,15 @@ scatter(makeFlower, 50, 7, 13, [0.9, 1.4], { seasons: ['spring', 'summer'], side
 }
 
 // ---------- 云（扁平纸片，缓慢漂移） ----------
+// 云片用不透明材质：入夜后整体变暗成剪影；
+// 半透明的话几个圆片重叠处会透出接缝，夜里一眼就看出是圆拼的
+// 月亮的位置：云要避开它，终点夜空只留月亮、星星和礼花
+const MOON_POS = new THREE.Vector3(END_POS.x + 16, 17, -55);
 const clouds = [];
 {
     for (let i = 0; i < 10; i++) {
         const g = new THREE.Group();
-        const mat = flatMat(0xffffff, { transparent: true, opacity: 0.92 });
+        const mat = flatMat(0xffffff);
         const puffs = 3 + Math.floor(Math.random() * 2);
         for (let j = 0; j < puffs; j++) {
             const r = 1.6 + Math.random() * 1.6;
@@ -394,8 +527,14 @@ const clouds = [];
         }
         const t = Math.random();
         const p = curve.getPointAt(t);
-        g.position.set(p.x + (Math.random() - 0.5) * 50, 12 + Math.random() * 9, p.z - 42 - Math.random() * 30);
-        g.scale.setScalar(1.2 + Math.random() * 1.4);
+        let x = p.x + (Math.random() - 0.5) * 50;
+        const y = 15 + Math.random() * 10;
+        // 云在远山背后（山在 z -75~-105）：距离更远、雾气更浓，层次才对
+        const z = p.z - 100 - Math.random() * 25;
+        // 月亮周围留白
+        while (Math.hypot(x - MOON_POS.x, y - MOON_POS.y) < 26) x -= 40;
+        g.position.set(x, y, z);
+        g.scale.setScalar(1.5 + Math.random() * 1.4);
         g.userData.speed = 0.25 + Math.random() * 0.45;
         scene.add(g);
         clouds.push(g);
@@ -504,7 +643,7 @@ let moonMat = null;
     });
     moonMat.userData.keepAtNight = true; // 夜里也保持发亮
     const moon = new THREE.Mesh(new THREE.PlaneGeometry(11, 11), moonMat);
-    moon.position.set(END_POS.x + 16, 17, -55);
+    moon.position.copy(MOON_POS);
     scene.add(moon);
     billboards.push(moon);
 }
@@ -948,8 +1087,9 @@ function lerpAngle(a, b, t) {
 }
 
 // ---------- 状态机与 UI ----------
-let state = 'loading'; // loading → ready → walking ⇄ paused → finale → finished
+let state = 'loading'; // loading → ready → greeting → walking ⇄ paused → finale → finished
 let progress = 0;
+let greetTime = 0;
 
 // 人物转身后凝望的天空方向（VRM 视线目标）
 const skyGaze = new THREE.Object3D();
@@ -977,7 +1117,8 @@ const ui = {
 
 ui.startBtn.addEventListener('click', () => {
     ui.startScreen.classList.add('hidden');
-    state = 'walking';
+    state = 'greeting';
+    greetTime = 0;
 });
 
 ui.continueBtn.addEventListener('click', () => {
@@ -1058,7 +1199,9 @@ markers.forEach((m) => {
     const dot = document.createElement('div');
     dot.className = 'progress-dot';
     dot.style.left = `${m.t * 100}%`;
-    dot.title = `${m.event.date || ''} ${m.event.title || ''}`.trim();
+    dot.dataset.title = `${m.event.date || ''} ${m.event.title || ''}`.trim(); // 悬停气泡里显示
+    const tp = EVENT_TYPES[m.event.type];
+    if (tp) dot.style.borderColor = tp.color;
     dot.addEventListener('pointerdown', (e) => e.stopPropagation());
     dot.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1127,10 +1270,37 @@ function tick() {
     const tan = curve.getTangentAt(t);
     character.position.x = p.x;
     character.position.z = p.z;
-    if (state !== 'finale' && state !== 'finished') {
+    if (state === 'greeting') {
+        // 出发前：先平滑转向镜头，举起右手挥一挥，再转身回路上出发
+        greetTime += dt;
+        const tan0 = curve.getTangentAt(0);
+        const pathRy = Math.atan2(tan0.x, tan0.z);
+        const turn = THREE.MathUtils.smoothstep(greetTime, 0, 0.6);
+        const back = THREE.MathUtils.smoothstep(greetTime, 2.4, 3.0);
+        character.rotation.y = lerpAngle(lerpAngle(pathRy, 0, turn), pathRy, back);
+        if (greetTime > 3.0) state = 'walking';
+    } else if (state !== 'finale' && state !== 'finished') {
         character.rotation.y = Math.atan2(tan.x, tan.z);
     }
     animateCharacter(dt, walking, time);
+    if (state === 'greeting' && bones) {
+        // 自然的挥手：上臂抬到侧上方（手在头的旁边，不会插进头发），
+        // 靠前臂左右摆动打招呼；头轻轻歪一点
+        // （右手垂下是 +z 旋转，举起来就是 -z）
+        const raise = THREE.MathUtils.smoothstep(greetTime, 0.15, 0.75)
+            * (1 - THREE.MathUtils.smoothstep(greetTime, 2.3, 2.9));
+        const wave = Math.sin(time * 4.5);
+        if (bones.rightUpperArm) {
+            bones.rightUpperArm.rotation.x = 0;
+            bones.rightUpperArm.rotation.z = ARM_DOWN * (1 - raise) + (-1.3 + wave * 0.06) * raise;
+        }
+        if (bones.rightLowerArm) {
+            // 扭转前臂让手掌面向观众，再左右摆动打招呼
+            bones.rightLowerArm.rotation.x = -1.5 * raise;
+            bones.rightLowerArm.rotation.z = ARM_DOWN * 0.25 * (1 - raise) + (-0.35 + wave * 0.4) * raise;
+        }
+        if (bones.head) bones.head.rotation.z = 0.08 * raise;
+    }
     if (vrm) vrm.update(dt);
 
     // 终点演出：停下 → 转身背对屏幕 → 天黑 → 放礼花
@@ -1180,12 +1350,13 @@ function tick() {
     camTarget.lerp(lookGoal, k);
     camera.lookAt(camTarget);
 
-    // 纸片景物面向相机；云缓慢漂移
+    // 纸片景物面向相机；云缓慢漂移（飘到终点前就回到起点重飘，月亮周围保持无云）
     for (const b of billboards) {
         b.rotation.y = Math.atan2(camera.position.x - b.position.x, camera.position.z - b.position.z);
     }
     for (const c of clouds) {
         c.position.x += c.userData.speed * dt;
+        if (c.position.x > END_POS.x - 30) c.position.x = -100 - Math.random() * 40;
     }
 
     // 氛围动画
