@@ -798,27 +798,7 @@ function animateCharacter(dt, walking, time) {
     character.position.y = bob;
 }
 
-// ---------- 事件节点（木杆 + 拍立得照片 + 发光球） ----------
-function placeholderTexture(index) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 192;
-    const ctx = canvas.getContext('2d');
-    const hue = (index * 47) % 360;
-    const grad = ctx.createLinearGradient(0, 0, 256, 192);
-    grad.addColorStop(0, `hsl(${hue}, 55%, 62%)`);
-    grad.addColorStop(1, `hsl(${(hue + 50) % 360}, 55%, 45%)`);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 192);
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.font = 'bold 84px Kalam, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(index + 1), 128, 100);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-}
+// ---------- 事件节点（图标徽章 + 发光球） ----------
 
 function glowSpriteTexture() {
     const canvas = document.createElement('canvas');
@@ -837,210 +817,62 @@ function glowSpriteTexture() {
 }
 const glowTex = glowSpriteTexture();
 
-// ---------- 事件标志：每种类型一个不同的扁平小物件（照片嵌在物件上） ----------
-function roundedRectGeo(w, h, r) {
-    const s = new THREE.Shape();
-    const x = -w / 2;
-    const y = -h / 2;
-    s.moveTo(x + r, y);
-    s.lineTo(x + w - r, y);
-    s.quadraticCurveTo(x + w, y, x + w, y + r);
-    s.lineTo(x + w, y + h - r);
-    s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    s.lineTo(x + r, y + h);
-    s.quadraticCurveTo(x, y + h, x, y + h - r);
-    s.lineTo(x, y + r);
-    s.quadraticCurveTo(x, y, x + r, y);
-    return new THREE.ShapeGeometry(s);
-}
-const RECT = (w, h) => new THREE.PlaneGeometry(w, h);
-const CIRC = (r) => new THREE.CircleGeometry(r, 24);
+// ---------- 事件标志：彩色圆徽章 + 标准图标（emoji），统一造型 ----------
+// 徽章插在细木杆上；有照片时徽章中心换成圆形照片，右下角保留类型小图标
+const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
 
-function part(geo, color, x, y, z = 0, rz = 0) {
-    const m = new THREE.Mesh(geo, flatMat(color));
-    m.position.set(x, y, z);
-    if (rz) m.rotation.z = rz;
-    return m;
-}
-
-// 白边照片（可带一点倾斜，像随手贴上去的）
-function addPhoto(g, photoMat, w, h, x, y, rz = 0, border = 0.09, borderColor = 0xfffaf0) {
-    g.add(part(RECT(w + border * 2, h + border * 2), borderColor, x, y, 0.01, rz));
-    const ph = new THREE.Mesh(new THREE.PlaneGeometry(w, h), photoMat);
-    ph.position.set(x, y, 0.02);
-    ph.rotation.z = rz;
-    g.add(ph);
+function drawBadge(ctx, ev, img = null) {
+    const tp = EVENT_TYPES[ev.type] || { color: '#b0a48e', icon: '✨' };
+    ctx.clearRect(0, 0, 256, 256);
+    // 白边圆环 + 彩色圆底
+    ctx.beginPath(); ctx.arc(128, 128, 122, 0, Math.PI * 2); ctx.fillStyle = '#fffaf0'; ctx.fill();
+    ctx.beginPath(); ctx.arc(128, 128, 106, 0, Math.PI * 2); ctx.fillStyle = tp.color; ctx.fill();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (img) {
+        // 圆形照片铺满徽章中心
+        ctx.save();
+        ctx.beginPath(); ctx.arc(128, 128, 100, 0, Math.PI * 2); ctx.clip();
+        const s = Math.max(256 / img.width, 256 / img.height);
+        ctx.drawImage(img, 128 - (img.width * s) / 2, 128 - (img.height * s) / 2, img.width * s, img.height * s);
+        ctx.restore();
+        // 右下角类型小圆标
+        ctx.beginPath(); ctx.arc(194, 194, 40, 0, Math.PI * 2); ctx.fillStyle = '#fffaf0'; ctx.fill();
+        ctx.beginPath(); ctx.arc(194, 194, 31, 0, Math.PI * 2); ctx.fillStyle = tp.color; ctx.fill();
+        ctx.font = `36px ${EMOJI_FONT}`;
+        ctx.fillText(tp.icon, 194, 197);
+    } else {
+        ctx.font = `104px ${EMOJI_FONT}`;
+        ctx.fillText(tp.icon, 128, 136);
+    }
 }
 
 // 返回 { group, topY }：topY 是放发光球的高度
-function buildProp(type, photoMat) {
-    const g = new THREE.Group();
-    let topY = 2.4;
-    switch (type) {
-        case 'travel': { // 家庭旅行：行李箱，照片是贴在箱子上的贴纸
-            g.add(part(roundedRectGeo(1.8, 1.25, 0.18), 0xd98a4e, 0, 0.82));
-            g.add(part(roundedRectGeo(0.5, 0.24, 0.1), 0x8a5a30, 0, 1.56));
-            g.add(part(RECT(0.16, 1.25), 0xb46a34, -0.52, 0.82, 0.005));
-            g.add(part(RECT(0.16, 1.25), 0xb46a34, 0.52, 0.82, 0.005));
-            g.add(part(CIRC(0.11), 0x5a4632, -0.55, 0.16, 0.005));
-            g.add(part(CIRC(0.11), 0x5a4632, 0.55, 0.16, 0.005));
-            addPhoto(g, photoMat, 0.72, 0.54, -0.12, 0.86, 0.1);
-            topY = 2.1;
-            break;
-        }
-        case 'movie': { // 影视：爆米花桶，照片是桶身标签
-            // 桶身（上宽下窄的梯形）和红条纹
-            const bucket = new THREE.Shape();
-            bucket.moveTo(-0.78, 0.7);
-            bucket.lineTo(0.78, 0.7);
-            bucket.lineTo(0.56, -0.7);
-            bucket.lineTo(-0.56, -0.7);
-            bucket.closePath();
-            g.add(part(new THREE.ShapeGeometry(bucket), 0xfffaf0, 0, 0.85));
-            // 条纹跟着桶身的斜度走（半宽随高度线性变化）
-            for (const sx of [-0.42, 0, 0.42]) {
-                const stripe = new THREE.Shape();
-                const t = 0.13; // 条纹半宽
-                stripe.moveTo(sx - t * 1.1, 0.7);
-                stripe.lineTo(sx + t * 1.1, 0.7);
-                stripe.lineTo(sx + t * 0.9, -0.7);
-                stripe.lineTo(sx - t * 0.9, -0.7);
-                stripe.closePath();
-                g.add(part(new THREE.ShapeGeometry(stripe), 0xe05d5d, 0, 0.85, 0.005));
-            }
-            // 顶上的爆米花球
-            const popColors = [0xfff3d0, 0xffe9b0, 0xfff8e0];
-            [[-0.55, 1.58, 0.26], [-0.15, 1.72, 0.3], [0.3, 1.66, 0.27], [0.62, 1.55, 0.22], [-0.38, 1.78, 0.2], [0.12, 1.85, 0.22]].forEach(([x, y, r], i) => {
-                g.add(part(CIRC(r), popColors[i % 3], x, y, 0.01));
-            });
-            addPhoto(g, photoMat, 0.68, 0.52, 0, 0.82, 0.04, 0.07);
-            topY = 2.3;
-            break;
-        }
-        case 'book': { // 读书：一本打开的书，照片在右页
-            g.add(part(roundedRectGeo(2.05, 1.4, 0.12), 0x8f6fd8, 0, 0.85));
-            g.add(part(RECT(0.9, 1.2), 0xfffaf0, -0.48, 0.87, 0.005, 0.06));
-            g.add(part(RECT(0.9, 1.2), 0xfffaf0, 0.48, 0.87, 0.005, -0.06));
-            for (let i = 0; i < 4; i++) {
-                g.add(part(RECT(0.58, 0.045), 0xc9c2b8, -0.48, 1.18 - i * 0.22, 0.01, 0.06));
-            }
-            addPhoto(g, photoMat, 0.62, 0.82, 0.48, 0.87, -0.06, 0.05);
-            topY = 1.9;
-            break;
-        }
-        case 'study': { // 学习：小书包，照片在前袋上
-            // 两侧露出的肩带
-            g.add(part(roundedRectGeo(0.22, 0.9, 0.1), 0xc44a3c, -0.78, 0.95, -0.005, -0.12));
-            g.add(part(roundedRectGeo(0.22, 0.9, 0.1), 0xc44a3c, 0.78, 0.95, -0.005, 0.12));
-            // 包身
-            g.add(part(roundedRectGeo(1.5, 1.5, 0.38), 0xf26d5b, 0, 0.92));
-            // 顶盖和提手
-            g.add(part(roundedRectGeo(1.1, 0.5, 0.2), 0xe05a48, 0, 1.62, 0.005));
-            g.add(part(roundedRectGeo(0.42, 0.2, 0.09), 0xc44a3c, 0, 1.92));
-            // 前袋
-            g.add(part(roundedRectGeo(1.0, 0.78, 0.2), 0xff9a86, 0, 0.6, 0.005));
-            addPhoto(g, photoMat, 0.66, 0.48, 0, 0.62, -0.03, 0.06);
-            topY = 2.35;
-            break;
-        }
-        case 'exercise': { // 锻炼：胖哑铃，照片吊牌挂在杆上
-            // 握杆
-            g.add(part(roundedRectGeo(1.7, 0.22, 0.11), 0x5a6a7a, 0, 0.78));
-            // 两端铃片（圆角方片，外大内小）
-            for (const sx of [-1, 1]) {
-                g.add(part(roundedRectGeo(0.34, 1.0, 0.14), 0xc44a3c, sx * 0.82, 0.78));
-                g.add(part(roundedRectGeo(0.3, 0.78, 0.12), 0xe05d5d, sx * 0.56, 0.78, 0.005));
-            }
-            // 吊牌：细绳 + 白边照片
-            g.add(part(RECT(0.03, 0.3), 0xb0a48e, -0.14, 0.5, 0));
-            g.add(part(RECT(0.03, 0.3), 0xb0a48e, 0.14, 0.5, 0));
-            addPhoto(g, photoMat, 0.58, 0.44, 0, 0.22, 0.02, 0.06);
-            topY = 1.75;
-            break;
-        }
-        case 'show': { // 演出：剧院红幕，照片是舞台
-            // 舞台台面
-            g.add(part(roundedRectGeo(2.4, 0.22, 0.1), 0x8a5a30, 0, 0.28));
-            // 舞台背景（照片）
-            addPhoto(g, photoMat, 1.6, 1.15, 0, 1.1, 0, 0.08, 0xfff6df);
-            // 两侧红幕（微微外翻）
-            g.add(part(roundedRectGeo(0.48, 1.75, 0.18), 0xd84a4a, -1.05, 1.15, 0.015, -0.09));
-            g.add(part(roundedRectGeo(0.48, 1.75, 0.18), 0xd84a4a, 1.05, 1.15, 0.015, 0.09));
-            // 顶部帘幔 + 波浪帘边（一排圆）
-            g.add(part(roundedRectGeo(2.4, 0.5, 0.16), 0xd84a4a, 0, 2.1, 0.02));
-            for (let i = 0; i < 6; i++) {
-                g.add(part(CIRC(0.17), 0xd84a4a, -1.0 + i * 0.4, 1.82, 0.02));
-            }
-            // 帘幔金色穗带
-            g.add(part(RECT(2.0, 0.07), 0xffd166, 0, 1.98, 0.025));
-            topY = 2.7;
-            break;
-        }
-        case 'exhibition': { // 展览：圆形金色画框，照片圆片嵌在框里
-            // 框底下的两只小脚
-            g.add(part(roundedRectGeo(0.46, 0.2, 0.09), 0x8a6a2a, -0.52, 0.12));
-            g.add(part(roundedRectGeo(0.46, 0.2, 0.09), 0x8a6a2a, 0.52, 0.12));
-            // 外层金色大圆 + 内圈深色细边
-            g.add(part(CIRC(1.05), 0xd8a23c, 0, 1.38));
-            g.add(part(CIRC(0.88), 0x8a6a2a, 0, 1.38, 0.005));
-            // 圆形照片：白边圆 + 照片圆片（addPhoto 是方照片，这里手写圆的）
-            g.add(part(CIRC(0.8), 0xfffaf0, 0, 1.38, 0.01));
-            const ph = new THREE.Mesh(new THREE.CircleGeometry(0.72, 32), photoMat);
-            ph.position.set(0, 1.38, 0.02);
-            g.add(ph);
-            // 顶部小圆球装饰
-            g.add(part(CIRC(0.16), 0xd8a23c, 0, 2.55, 0.005));
-            topY = 2.6;
-            break;
-        }
-        case 'game': { // 游戏：圆滚滚掌机，照片是屏幕
-            // 两端大圆手柄（左蓝右红）
-            g.add(part(CIRC(0.55), 0x5a8fd0, -0.82, 0.85));
-            g.add(part(CIRC(0.55), 0xe05d5d, 0.82, 0.85));
-            // 圆角矩形机身
-            g.add(part(roundedRectGeo(1.5, 0.95, 0.42), 0x4a5560, 0, 0.85, 0.005));
-            // 手柄上的小圆按键
-            g.add(part(CIRC(0.09), 0xfffaf0, -0.92, 0.98, 0.01));
-            g.add(part(CIRC(0.07), 0xfffaf0, -0.7, 0.76, 0.01));
-            g.add(part(CIRC(0.07), 0xfffaf0, 0.7, 0.96, 0.01));
-            g.add(part(CIRC(0.09), 0xfffaf0, 0.92, 0.76, 0.01));
-            // 中央屏幕（照片）
-            addPhoto(g, photoMat, 0.86, 0.64, 0, 0.85, 0, 0.07);
-            topY = 2.2;
-            break;
-        }
-        case 'party': { // 朋友聚会：圆火锅，照片是挂在锅身上的小圆牌
-            // 两缕蒸汽（细长的圆角条，微微倾斜）
-            g.add(part(roundedRectGeo(0.12, 0.55, 0.06), 0xf6f1e2, -0.26, 2.16, 0, -0.14));
-            g.add(part(roundedRectGeo(0.12, 0.45, 0.06), 0xf6f1e2, 0.24, 2.12, 0, 0.16));
-            // 两侧小圆耳朵把手
-            g.add(part(CIRC(0.2), 0xb03a2e, -0.92, 1.0));
-            g.add(part(CIRC(0.2), 0xb03a2e, 0.92, 1.0));
-            // 番茄红大圆锅身
-            g.add(part(CIRC(0.85), 0xe05a3a, 0, 1.0, 0.005));
-            // 奶油色汤底（锅口偏上半部分，像微微俯视）
-            g.add(part(CIRC(0.6), 0xfff0d0, 0, 1.14, 0.01));
-            // 汤上的小圆食材（绿/白/橙）
-            g.add(part(CIRC(0.11), 0x7cc46a, -0.24, 1.3, 0.015));
-            g.add(part(CIRC(0.09), 0xffffff, 0.2, 1.32, 0.015));
-            g.add(part(CIRC(0.1), 0xf2a03c, 0.02, 1.04, 0.015));
-            g.add(part(CIRC(0.07), 0x7cc46a, 0.32, 1.12, 0.015));
-            // 挂在锅身中下方的小圆牌照片：白边圆 + 圆照片
-            g.add(part(CIRC(0.42), 0xfffaf0, 0, 0.5, 0.02));
-            const ph = new THREE.Mesh(new THREE.CircleGeometry(0.34, 32), photoMat);
-            ph.position.set(0, 0.5, 0.03);
-            g.add(ph);
-            topY = 2.2;
-            break;
-        }
-        default: { // 默认：木杆路牌
-            g.add(part(new THREE.CylinderGeometry(0.05, 0.06, 1.6, 6), 0x8a6a4a, 0, 0.8));
-            addPhoto(g, photoMat, 1.76, 1.28, 0, 2.0, 0, 0.12);
-            topY = 3.1;
-            break;
-        }
+function buildBadge(ev) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    drawBadge(ctx, ev);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    // 有真实照片时画进徽章（media 里第一张图片，视频跳过）
+    const firstImg = (ev.media || []).find((src) => !isVideo(src));
+    if (firstImg) {
+        const img = new Image();
+        img.onload = () => { drawBadge(ctx, ev, img); tex.needsUpdate = true; };
+        img.src = firstImg;
     }
-    return { group: g, topY };
+    const g = new THREE.Group();
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 1.0, 6), flatMat(0x8a6a4a));
+    pole.position.y = 0.5;
+    g.add(pole);
+    const badge = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 1.5),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true }),
+    );
+    badge.position.y = 1.75;
+    g.add(badge);
+    return { group: g, topY: 2.75 };
 }
 
 const isVideo = (src) => /\.(mp4|webm|mov|m4v)$/i.test(src);
@@ -1057,8 +889,7 @@ EVENTS.forEach((ev, i) => {
     const group = new THREE.Group();
     group.position.copy(pos);
 
-    const photoMat = new THREE.MeshBasicMaterial({ map: placeholderTexture(i) });
-    const prop = buildProp(ev.type, photoMat);
+    const prop = buildBadge(ev); // 徽章内部已处理照片加载
     const frame = prop.group;
     group.add(frame);
 
@@ -1078,16 +909,6 @@ EVENTS.forEach((ev, i) => {
     halo.scale.setScalar(1.3);
     halo.position.y = prop.topY;
     group.add(halo);
-
-    // 有真实照片时替换贴图（用 media 里的第一张图片，视频跳过）
-    const firstImg = (ev.media || []).find((src) => !isVideo(src));
-    if (firstImg) {
-        new THREE.TextureLoader().load(firstImg, (tex) => {
-            tex.colorSpace = THREE.SRGBColorSpace;
-            photoMat.map = tex;
-            photoMat.needsUpdate = true;
-        });
-    }
 
     scene.add(group);
     billboards.push(group); // 扁平物件，始终面向相机
@@ -1130,7 +951,7 @@ const articles = [];
         if (tp) {
             const chip = document.createElement('span');
             chip.className = 'card-type';
-            chip.textContent = tp.label;
+            chip.textContent = `${tp.icon} ${tp.label}`; // 图标进博客，一眼看出类别
             chip.style.background = tp.color;
             head.appendChild(chip);
         }
@@ -1347,6 +1168,7 @@ function lerpAngle(a, b, t) {
 // ---------- 状态机与 UI ----------
 let state = 'loading'; // loading → ready → finale → finished
 let progress = 0;
+let chaseSpeed = 0;    // 追赶滚动目标的当前速度（t/秒），带惯性
 let hasScrolled = false; // 开始滚动前，人物站在起点面向镜头挥手
 
 // 人物转身后凝望的天空方向（VRM 视线目标）
@@ -1432,15 +1254,27 @@ function tick() {
     const dt = Math.min(clock.getDelta(), 0.05);
     const time = clock.elapsedTime;
 
-    // 滚动即行走：scrollY 分段线性映射到小路进度，progress 快速跟随（只去抖）
+    // 滚动即行走：scrollY 分段线性映射到小路进度。
+    // 人物不瞬移跟随滚动——有最快速度和平滑加减速：滑快了她小跑追赶，
+    // 滑停了她缓两步才站稳；只有大跳转（点圆点/拖进度条）才直接到位
     const scrollY = window.scrollY;
     if (scrollY > 2) hasScrolled = true;
     const target = scrollToProgress(scrollY);
-    const prevProgress = progress;
-    progress += (target - progress) * (1 - Math.exp(-18 * dt));
-    const vel = dt > 0 ? (progress - prevProgress) / dt : 0;
-    const moving = Math.abs(vel) > 0.0008;
-    moveSpeed = Math.min(Math.abs(vel) * curveLength, 12);
+    const gap = target - progress;
+    if (Math.abs(gap) > 0.09) {
+        progress = target;
+        chaseSpeed = 0;
+    } else {
+        const maxChase = 7 / curveLength;  // 追赶最快速度 7 米/秒
+        const accel = 9 / curveLength;     // 加速度 9 米/秒²
+        const desired = THREE.MathUtils.clamp(gap * 1.6, -maxChase, maxChase);
+        chaseSpeed += THREE.MathUtils.clamp(desired - chaseSpeed, -accel * dt, accel * dt);
+        if (Math.abs(gap) < 0.0003 && Math.abs(chaseSpeed) < 0.0004) chaseSpeed = 0;
+        progress += chaseSpeed * dt;
+    }
+    const vel = chaseSpeed;
+    const moving = Math.abs(vel) > 0.0006;
+    moveSpeed = Math.min(Math.abs(vel) * curveLength, 8);
     ui.progressFill.style.width = `${Math.round(progress * 100)}%`;
 
     // 终点演出由滚动触发；往回滑离终点区域则天亮复原
@@ -1459,14 +1293,15 @@ function tick() {
     const tan = curve.getTangentAt(t);
     character.position.x = p.x;
     character.position.z = p.z;
-    // 还没滚动过时站在起点面向镜头挥手；走起来以后朝运动方向（往上滑 = 转身朝后走），停顿保持朝向
+    // 还没滚动过时站在起点面向镜头挥手；走起来以后平滑转向运动方向（往上滑 = 转身朝后走），停顿保持朝向
     const waving = !hasScrolled && progress < 0.001 && state === 'ready';
     if (state !== 'finale' && state !== 'finished') {
+        const turnK = 1 - Math.exp(-7 * dt); // 平滑转身，不瞬间掉头
         if (waving) {
-            character.rotation.y = 0; // 面向镜头
+            character.rotation.y = lerpAngle(character.rotation.y, 0, turnK);
         } else if (moving) {
             const dir = vel > 0 ? 1 : -1;
-            character.rotation.y = Math.atan2(tan.x * dir, tan.z * dir);
+            character.rotation.y = lerpAngle(character.rotation.y, Math.atan2(tan.x * dir, tan.z * dir), turnK);
         }
     }
     animateCharacter(dt, moving, time);

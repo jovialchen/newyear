@@ -2,17 +2,10 @@
 //  2026 年事件数据 —— 你只需要改这一个文件
 //
 //  每个事件的字段：
-//    type        事件类型，决定路边标志的造型，可选值：
-//                  'travel'     家庭旅行 —— 行李箱（照片贴在箱子上）
-//                  'movie'      影视 —— 爆米花桶（照片是桶身标签）
-//                  'book'       读书 —— 一本打开的书（右页是照片）
-//                  'study'      学习 —— 小书包（照片在前袋上）
-//                  'exercise'   锻炼 —— 哑铃（照片吊牌挂在杆上）
-//                  'show'       演出 —— 剧院红幕（照片是舞台）
-//                  'exhibition' 展览 —— 圆形画框（照片圆片嵌在框里）
-//                  'game'       游戏 —— 掌机（照片是屏幕）
-//                  'party'      朋友聚会 —— 火锅（照片是挂在锅身的小圆牌）
-//                写其他值或留空时，默认显示「木杆路牌」
+//    type        事件类型，决定路边徽章和博客标签的颜色与图标（EVENT_TYPES 里有定义），
+//                可选值：'travel' 家庭旅行 / 'movie' 影视 / 'book' 读书 / 'study' 学习
+//                'exercise' 锻炼 / 'show' 演出 / 'exhibition' 展览 / 'game' 游戏 / 'party' 朋友聚会
+//                写其他值或留空时，显示默认 ✨ 徽章
 //    date        ISO 格式 '2026-MM-DD'：事件按 date 的真实日期比例站在小路上
 //                （1 月 1 日在最前，12 月 31 日在最后；同一天的会微微错开）
 //    label       可选，卡片顶部显示的日期文字；不写时回退显示 date
@@ -27,17 +20,17 @@
 //  事件按日期排列（第一个在最前面）。想加事件就按日期插入，想删就删掉整段。
 // ============================================================
 
-// 事件类型的显示名和卡片标签颜色
+// 事件类型的显示名、卡片标签颜色和标准图标（路边徽章 + 博客标签都用它）
 export const EVENT_TYPES = {
-  travel: { label: '家庭旅行', color: '#ff9a5f' },
-  movie: { label: '影视', color: '#7c9ef8' },
-  book: { label: '读书', color: '#8f6fd8' },
-  study: { label: '学习', color: '#4fae8e' },
-  exercise: { label: '锻炼', color: '#e05d5d' },
-  show: { label: '演出', color: '#d8a23c' },
-  exhibition: { label: '展览', color: '#5aa8c9' },
-  game: { label: '游戏', color: '#f2b93c' },
-  party: { label: '朋友聚会', color: '#e07b9a' },
+  travel: { label: '家庭旅行', color: '#ff9a5f', icon: '🧳' },
+  movie: { label: '影视', color: '#7c9ef8', icon: '🎬' },
+  book: { label: '读书', color: '#8f6fd8', icon: '📚' },
+  study: { label: '学习', color: '#4fae8e', icon: '🎓' },
+  exercise: { label: '锻炼', color: '#e05d5d', icon: '🏊' },
+  show: { label: '演出', color: '#d8a23c', icon: '🎭' },
+  exhibition: { label: '展览', color: '#5aa8c9', icon: '🖼️' },
+  game: { label: '游戏', color: '#f2b93c', icon: '🎮' },
+  party: { label: '朋友聚会', color: '#e07b9a', icon: '🍲' },
 };
 
 export const EVENTS = [

@@ -122,14 +122,16 @@ canvas {
     text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
 }
 
-/* ---------- 事件文章（博客卡片，随页面自然滚动） ---------- */
+/* ---------- 事件文章（磨砂玻璃卡片，场景光影透进来，随页面自然滚动） ---------- */
 .card {
-    width: min(680px, 92vw);
+    width: min(720px, 92vw);
     margin: 0 auto;
-    background: rgba(255, 252, 246, 0.97);
+    background: rgba(255, 252, 246, 0.2);
+    backdrop-filter: blur(18px) saturate(1.15);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15);
     border-radius: 20px;
     padding: 1.7rem 1.9rem 1.6rem;
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.28);
     text-align: left;
 }
 
@@ -227,38 +229,48 @@ canvas {
     transform: scale(0.97);
 }
 
-/* ---------- 终点：滑到底时人物已转身、天黑放礼花，卡片衬在夜空上 ---------- */
+/* ---------- 终点：滑到底时人物已转身、天黑放礼花；收尾卡片是和博客同宽的一条短横条 ---------- */
 #finale {
-    min-height: 180vh;
+    min-height: 170vh;
     display: flex;
     align-items: flex-end;
-    /* 卡片靠右下停靠，把画面中央留给转身看礼花的人物 */
-    justify-content: flex-end;
-    padding-bottom: 12vh;
-    padding-right: 6vw;
+    justify-content: center;
+    padding: 0 1rem 5vh;
 }
 
 .finale-card {
-    max-width: 340px;
-    background: rgba(20, 24, 40, 0.75);
+    width: min(720px, 92vw);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1.2rem;
+    flex-wrap: wrap;
+    background: rgba(20, 24, 40, 0.72);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: #fff;
-    text-align: center;
-    border-radius: 22px;
-    padding: 1.8rem 2rem;
+    border-radius: 18px;
+    padding: 0.9rem 1.5rem;
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
 .finale-card h2 {
-    font-size: clamp(1.6rem, 5vw, 2.4rem);
-    letter-spacing: 0.1em;
-    margin-bottom: 0.7rem;
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap; /* 标题一行放下，不折行 */
     text-shadow: 0 0 18px rgba(255, 214, 130, 0.55);
 }
 
 .finale-card p {
     opacity: 0.85;
-    margin-bottom: 1.6rem;
+    font-size: 0.92rem;
+    flex: 1;
+    min-width: 8em;
+}
+
+.finale-card .big-btn {
+    font-size: 1rem;
+    padding: 0.6rem 1.6rem;
 }
 
 /* ---------- 顶部进度条（可拖动 / 站点圆点，悬停看标题） ---------- */
@@ -391,12 +403,8 @@ canvas {
     }
 
     .finale-card {
-        padding: 1.6rem 1.4rem;
-    }
-
-    /* 手机上人物在画面上方，卡片回到底部居中 */
-    #finale {
+        padding: 0.9rem 1.1rem;
         justify-content: center;
-        padding-right: 0;
+        text-align: center;
     }
 }
