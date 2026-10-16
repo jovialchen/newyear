@@ -6,14 +6,17 @@
 
 html, body {
     width: 100%;
-    height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
     font-family: 'Kalam', 'PingFang SC', 'Microsoft YaHei', cursive, sans-serif;
     background: #cfe3ee;
 }
 
+/* 3D 小路固定在视口，文章内容在其上滚动 */
 canvas {
     display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
 }
 
 .hidden {
@@ -44,34 +47,31 @@ canvas {
     opacity: 0.85;
 }
 
-/* ---------- 开始 / 终点画面 ---------- */
-#start-screen, #end-screen {
-    position: fixed;
-    inset: 0;
+/* ---------- 长博客主体（canvas 之上；只有文章本身可点选） ---------- */
+#story {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+}
+
+#intro,
+.event-article,
+.finale-card {
+    pointer-events: auto;
+}
+
+/* ---------- 开场 ---------- */
+#intro {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 20;
-    color: #fff;
     text-align: center;
+    color: #fff;
     padding: 1.5rem;
-}
-
-#start-screen {
-    background: rgba(20, 40, 32, 0.45);
-    backdrop-filter: blur(3px);
-}
-
-/* 终点不罩幕布：礼花要完整露出来，只留下一个按钮 */
-#end-screen {
-    pointer-events: none;
-    justify-content: flex-end;
-    padding-bottom: 9vh;
-}
-
-#end-screen .big-btn {
-    pointer-events: auto;
+    /* 从上到下渐隐的暗色渐变，保证标题在亮天空下也可读 */
+    background: linear-gradient(180deg, rgba(20, 40, 32, 0.5) 0%, rgba(20, 40, 32, 0.18) 55%, rgba(20, 40, 32, 0) 100%);
 }
 
 .start-title {
@@ -84,7 +84,125 @@ canvas {
 .start-subtitle {
     font-size: clamp(1rem, 3.5vw, 1.25rem);
     opacity: 0.92;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
     margin-bottom: 2.2rem;
+}
+
+.scroll-hint {
+    font-size: 2rem;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
+    animation: hint-float 1.6s ease-in-out infinite;
+}
+
+@keyframes hint-float {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.85;
+    }
+    50% {
+        transform: translateY(12px);
+        opacity: 0.5;
+    }
+}
+
+/* ---------- 事件之间的间隔：高度体现自然时间间隔 ---------- */
+.spacer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+/* 跨月份时 spacer 中央的大号淡淡月份标签 */
+.month-label {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.35em;
+    text-indent: 0.35em; /* 抵消末字后的字距，视觉居中 */
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- 事件文章（博客卡片，随页面自然滚动） ---------- */
+.card {
+    width: min(680px, 92vw);
+    margin: 0 auto;
+    background: rgba(255, 252, 246, 0.97);
+    border-radius: 20px;
+    padding: 1.7rem 1.9rem 1.6rem;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+    text-align: left;
+}
+
+/* 文章头：日期 + 类型标签同行，标题像博客标题 */
+.card-head {
+    border-bottom: 1px solid #ece2cf;
+    padding-bottom: 0.9rem;
+    margin-bottom: 1.1rem;
+}
+
+.card-date {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #a08050;
+    letter-spacing: 0.12em;
+    margin-right: 0.7rem;
+}
+
+.card-type {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: #fff;
+    padding: 0.18rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.1em;
+    vertical-align: 0.1em;
+}
+
+.card-title {
+    font-size: 1.55rem;
+    line-height: 1.45;
+    color: #3c3226;
+    margin-top: 0.5rem;
+}
+
+/* 正文：宽松行距，读长文不累 */
+.card-desc {
+    font-size: 1.02rem;
+    line-height: 1.95;
+    color: #544b40;
+    margin-bottom: 1.3rem;
+    white-space: pre-wrap;
+}
+
+/* 媒体流：照片/视频全宽依次排开，像博客插图 */
+.card-media {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.card-media img,
+.card-media video {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(60, 50, 38, 0.18);
+    background: #e8e0d0;
+}
+
+.card-media:empty {
+    display: none;
+}
+
+/* 没有媒体时的虚线占位 */
+.media-empty {
+    border: 2px dashed #d8cbb0;
+    border-radius: 12px;
+    color: #b0a48e;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-align: center;
+    padding: 1.5rem 1rem;
 }
 
 .big-btn {
@@ -109,138 +227,38 @@ canvas {
     transform: scale(0.97);
 }
 
-/* ---------- 事件文章（博客式：整篇自然滚动，媒体依次排开） ---------- */
-#event-card {
-    position: fixed;
-    inset: 0;
+/* ---------- 终点：滑到底时人物已转身、天黑放礼花，卡片衬在夜空上 ---------- */
+#finale {
+    min-height: 180vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3vh 1rem;
-    z-index: 15;
-    background: rgba(24, 38, 32, 0.38);
-    backdrop-filter: blur(2px);
+    align-items: flex-end;
+    /* 卡片靠右下停靠，把画面中央留给转身看礼花的人物 */
+    justify-content: flex-end;
+    padding-bottom: 12vh;
+    padding-right: 6vw;
 }
 
-.card {
-    width: min(680px, 96vw);
-    max-height: 92vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    background: rgba(255, 252, 246, 0.98);
-    border-radius: 20px;
-    padding: 1.7rem 1.9rem 1.4rem;
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
-    text-align: left;
-    animation: card-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-
-/* 细而淡的滚动条，不抢戏 */
-.card::-webkit-scrollbar {
-    width: 6px;
-}
-.card::-webkit-scrollbar-thumb {
-    background: rgba(160, 128, 80, 0.35);
-    border-radius: 999px;
-}
-
-@keyframes card-in {
-    from {
-        opacity: 0;
-        transform: translateY(46px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* 文章头：日期 + 类型标签同行，标题像博客标题 */
-.card-head {
-    border-bottom: 1px solid #ece2cf;
-    padding-bottom: 0.9rem;
-    margin-bottom: 1.1rem;
-}
-
-#card-date {
-    display: inline-block;
-    font-size: 0.85rem;
-    color: #a08050;
-    letter-spacing: 0.12em;
-    margin-right: 0.7rem;
-}
-
-#card-type {
-    display: none;
-    font-size: 0.75rem;
+.finale-card {
+    max-width: 340px;
+    background: rgba(20, 24, 40, 0.75);
+    backdrop-filter: blur(8px);
     color: #fff;
-    padding: 0.18rem 0.7rem;
-    border-radius: 999px;
+    text-align: center;
+    border-radius: 22px;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+.finale-card h2 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
     letter-spacing: 0.1em;
-    vertical-align: 0.1em;
+    margin-bottom: 0.7rem;
+    text-shadow: 0 0 18px rgba(255, 214, 130, 0.55);
 }
 
-#card-title {
-    font-size: 1.55rem;
-    line-height: 1.45;
-    color: #3c3226;
-    margin-top: 0.5rem;
-}
-
-/* 正文：宽松行距，读长文不累 */
-#card-desc {
-    font-size: 1.02rem;
-    line-height: 1.95;
-    color: #544b40;
-    margin-bottom: 1.3rem;
-    white-space: pre-wrap;
-}
-
-/* 媒体流：照片/视频全宽依次排开，像博客插图 */
-#card-media {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    margin-bottom: 1.4rem;
-}
-
-#card-media img,
-#card-media video {
-    width: 100%;
-    display: block;
-    border-radius: 12px;
-    box-shadow: 0 4px 18px rgba(60, 50, 38, 0.18);
-    background: #e8e0d0;
-}
-
-#card-media:empty {
-    display: none;
-    margin: 0;
-}
-
-/* 没有媒体时的虚线占位 */
-.media-empty {
-    border: 2px dashed #d8cbb0;
-    border-radius: 12px;
-    color: #b0a48e;
-    font-size: 0.9rem;
-    letter-spacing: 0.2em;
-    text-align: center;
-    padding: 1.5rem 1rem;
-}
-
-/* 文章脚：按钮居中 */
-.card-foot {
-    text-align: center;
-    border-top: 1px solid #ece2cf;
-    padding-top: 1.1rem;
-}
-
-#card-counter {
-    margin-top: 0.7rem;
-    font-size: 0.8rem;
-    color: #b0a48e;
-    letter-spacing: 0.15em;
+.finale-card p {
+    opacity: 0.85;
+    margin-bottom: 1.6rem;
 }
 
 /* ---------- 顶部进度条（可拖动 / 站点圆点，悬停看标题） ---------- */
@@ -292,11 +310,16 @@ canvas {
     transform: translate(-50%, -50%);
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-    transition: transform 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.25s ease;
 }
 
 .progress-dot:hover {
     transform: translate(-50%, -50%) scale(1.3);
+}
+
+/* 已经走过的站 */
+.progress-dot.passed {
+    opacity: 0.45;
 }
 
 /* 悬停冒出的小气泡：这一站的标题 */
@@ -345,7 +368,7 @@ canvas {
     }
 }
 
-/* 窄屏/手机：圆点更密更小；文章变成从底部升起的整页 */
+/* 窄屏/手机：圆点更小，文章更窄、padding 收紧 */
 @media (max-width: 640px) {
     .progress-dot {
         width: 8px;
@@ -353,24 +376,27 @@ canvas {
         border-width: 2px;
     }
 
-    #event-card {
-        align-items: flex-end;
-        padding: 0;
-    }
-
-    .card {
-        width: 100%;
-        max-height: 94vh;
-        border-radius: 20px 20px 0 0;
+    .event-article {
+        width: 94vw;
         padding: 1.2rem 1.15rem 1.1rem;
     }
 
-    #card-title {
+    .card-title {
         font-size: 1.3rem;
     }
 
-    #card-desc {
+    .card-desc {
         font-size: 0.97rem;
         line-height: 1.85;
+    }
+
+    .finale-card {
+        padding: 1.6rem 1.4rem;
+    }
+
+    /* 手机上人物在画面上方，卡片回到底部居中 */
+    #finale {
+        justify-content: center;
+        padding-right: 0;
     }
 }

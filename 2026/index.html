@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 · 林间小路</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,40 +19,27 @@
     </script>
 </head>
 <body>
-    <!-- 加载画面 -->
+    <!-- 加载画面（加载完直接露出 intro） -->
     <div id="loading">
         <p class="loading-title">2026 · 林间小路</p>
         <p id="loading-text">正在走进森林…</p>
     </div>
 
-    <!-- 开始画面 -->
-    <div id="start-screen" class="hidden">
-        <h1 class="start-title">2026 · 林间小路</h1>
-        <p class="start-subtitle">沿着森林里的小路，走过这一年的点点滴滴</p>
-        <button id="start-btn" class="big-btn">开始旅程</button>
-    </div>
-
-    <!-- 事件文章：像一篇博客，整篇自然滚动，照片/视频依次排开 -->
-    <div id="event-card" class="hidden">
-        <article class="card">
-            <header class="card-head">
-                <p id="card-date"></p>
-                <span id="card-type"></span>
-                <h2 id="card-title"></h2>
-            </header>
-            <p id="card-desc"></p>
-            <div id="card-media"></div>
-            <footer class="card-foot">
-                <button id="continue-btn" class="big-btn">继续往前走 →</button>
-                <p id="card-counter"></p>
-            </footer>
-        </article>
-    </div>
-
-    <!-- 终点画面：不罩幕布（会挡住礼花），只留下一个按钮 -->
-    <div id="end-screen" class="hidden">
-        <button id="restart-btn" class="big-btn">再走一遍 ✨</button>
-    </div>
+    <!-- 长博客：往下滑 = 沿小路往前走（JS 会在 #finale 之前注入 spacer + article × 65） -->
+    <main id="story">
+        <section id="intro">
+            <h1 class="start-title">2026 · 林间小路</h1>
+            <p class="start-subtitle">往下滑，走过这一年的点点滴滴</p>
+            <p class="scroll-hint">↓</p>
+        </section>
+        <section id="finale">
+            <div class="finale-card">
+                <h2>2027 新年快乐 ✨</h2>
+                <p>谢谢你陪我走完这一年</p>
+                <button id="restart-btn" class="big-btn">再走一遍 ↑</button>
+            </div>
+        </section>
+    </main>
 
     <!-- 顶部进度条 -->
     <div id="progress"><div id="progress-fill"><span id="progress-head">🐾</span></div></div>

@@ -25,9 +25,9 @@ const markerTs = (() => {
 
 const ASSETS = './assets';
 const VRM_URL = `${ASSETS}/hazel-pink.vrm`;
-const WALK_SPEED = 2.4;  // 米/秒：快到下一站时的正常步速
-const RUN_SPEED = 8.0;   // 米/秒：前后都没有事件的长空档里跑起来
-let moveSpeed = WALK_SPEED;
+const WALK_SPEED = 2.4;  // 米/秒：基准步速（走路↔跑步步态插值的下限）
+const RUN_SPEED = 8.0;   // 米/秒：快速滚动时步态插值的上限
+let moveSpeed = WALK_SPEED; // 由滚动速度换算而来
 const HAZE_COLOR = new THREE.Color(0xcfe6f2); // 远景揉进天空的颜色
 
 // ---------- 渲染器与场景 ----------
@@ -770,9 +770,9 @@ let walkPhase = 0;
 
 function animateCharacter(dt, walking, time) {
     if (bones) {
-        // 步频和摆腿幅度跟着速度走：空档里跑起来时步子更快更大
-        const runK = walking ? (moveSpeed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED) : 0;
-        walkPhase += dt * (walking ? 4.5 + moveSpeed * 1.15 : 2);
+        // 步频和摆腿幅度跟着速度走：滑得快就跑起来，步子更快更大
+        const runK = walking ? THREE.MathUtils.clamp((moveSpeed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED), 0, 1) : 0;
+        walkPhase += dt * (walking ? 4.5 + Math.min(moveSpeed, 8) * 1.15 : 2);
         const amp = walking ? 1 + runK * 0.35 : 0;
         const s = Math.sin(walkPhase);
         const set = (name, x, z) => {
@@ -1094,6 +1094,142 @@ EVENTS.forEach((ev, i) => {
     markers.push({ t, event: ev, group, orb, orbMat, haloMat, frame, orbY: prop.topY, triggered: false, index: i });
 });
 
+// ---------- 博客文章：每个事件一篇，插在 #story 里 #finale 之前 ----------
+const storyEl = document.getElementById('story');
+const finaleEl = document.getElementById('finale');
+const articles = [];
+{
+    let prevDate = null;
+    for (const ev of EVENTS) {
+        const d = new Date(`${ev.date}T00:00:00`);
+        const days = prevDate
+            ? Math.round((d - prevDate) / 86400000)
+            : Math.round((d - new Date('2026-01-01T00:00:00')) / 86400000);
+        // spacer：高度体现自然时间间隔；跨月份时中央放一个大号淡淡的月份标签
+        const spacer = document.createElement('div');
+        spacer.className = 'spacer';
+        spacer.style.height = `${Math.min(130, Math.max(35, 35 + days * 2))}vh`;
+        if (!prevDate || d.getMonth() !== prevDate.getMonth()) {
+            const label = document.createElement('div');
+            label.className = 'month-label';
+            label.textContent = `${d.getMonth() + 1} 月`;
+            spacer.appendChild(label);
+        }
+        storyEl.insertBefore(spacer, finaleEl);
+
+        const article = document.createElement('article');
+        article.className = 'event-article card';
+
+        const head = document.createElement('header');
+        head.className = 'card-head';
+        const dateEl = document.createElement('p');
+        dateEl.className = 'card-date';
+        dateEl.textContent = ev.label || ev.date || '';
+        head.appendChild(dateEl);
+        const tp = EVENT_TYPES[ev.type];
+        if (tp) {
+            const chip = document.createElement('span');
+            chip.className = 'card-type';
+            chip.textContent = tp.label;
+            chip.style.background = tp.color;
+            head.appendChild(chip);
+        }
+        const titleEl = document.createElement('h2');
+        titleEl.className = 'card-title';
+        titleEl.textContent = ev.title || '';
+        head.appendChild(titleEl);
+        article.appendChild(head);
+
+        const desc = document.createElement('p');
+        desc.className = 'card-desc';
+        desc.textContent = ev.description || '';
+        article.appendChild(desc);
+
+        // 媒体区：照片/视频依次排开；为空时放虚线占位
+        const mediaEl = document.createElement('div');
+        mediaEl.className = 'card-media';
+        const media = ev.media || [];
+        if (media.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'media-empty';
+            empty.textContent = '照片 / 视频待添加';
+            mediaEl.appendChild(empty);
+        } else {
+            for (const src of media) {
+                if (isVideo(src)) {
+                    const v = document.createElement('video');
+                    v.src = src;
+                    v.controls = true;
+                    v.playsInline = true;
+                    v.preload = 'metadata';
+                    mediaEl.appendChild(v);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = ev.title || '';
+                    img.loading = 'lazy';
+                    mediaEl.appendChild(img);
+                }
+            }
+        }
+        article.appendChild(mediaEl);
+
+        storyEl.insertBefore(article, finaleEl);
+        articles.push(article);
+        prevDate = d;
+    }
+}
+
+// ---------- 滚动 ↔ 小路进度：每篇文章一个锚点，分段线性映射 ----------
+// 文章滚到视口上 28% 处时，人物正好走到对应的标志旁；终点卡片进入下半屏时触发跨年演出
+let anchors = [];
+let finaleAnchor = 0;
+function layoutAnchors() {
+    const vh = window.innerHeight;
+    anchors = articles.map((a) => a.offsetTop - vh * 0.28);
+    finaleAnchor = finaleEl.offsetTop - vh * 0.6;
+}
+layoutAnchors();
+new ResizeObserver(layoutAnchors).observe(storyEl); // 图片加载会改变文章高度
+
+function scrollToProgress(y) {
+    const n = markerTs.length;
+    if (y <= anchors[0]) {
+        const k = anchors[0] > 0 ? THREE.MathUtils.clamp(y / anchors[0], 0, 1) : 0;
+        return k * markerTs[0];
+    }
+    for (let i = 0; i < n - 1; i++) {
+        if (y < anchors[i + 1]) {
+            const k = (y - anchors[i]) / (anchors[i + 1] - anchors[i]);
+            return markerTs[i] + k * (markerTs[i + 1] - markerTs[i]);
+        }
+    }
+    if (y < finaleAnchor) {
+        const k = (y - anchors[n - 1]) / (finaleAnchor - anchors[n - 1]);
+        return markerTs[n - 1] + k * (0.995 - markerTs[n - 1]);
+    }
+    return 0.995;
+}
+
+// 反函数：progress → scrollY（进度条拖动用）
+function progressToScroll(t) {
+    const n = markerTs.length;
+    if (t <= markerTs[0]) {
+        return markerTs[0] > 0 ? (t / markerTs[0]) * anchors[0] : 0;
+    }
+    for (let i = 0; i < n - 1; i++) {
+        if (t < markerTs[i + 1]) {
+            const k = (t - markerTs[i]) / (markerTs[i + 1] - markerTs[i]);
+            return anchors[i] + k * (anchors[i + 1] - anchors[i]);
+        }
+    }
+    if (t < 0.995) {
+        const k = (t - markerTs[n - 1]) / (0.995 - markerTs[n - 1]);
+        return anchors[n - 1] + k * (finaleAnchor - anchors[n - 1]);
+    }
+    return finaleAnchor;
+}
+
 // ---------- 终点牌 ----------
 {
     const canvas = document.createElement('canvas');
@@ -1209,9 +1345,9 @@ function lerpAngle(a, b, t) {
 }
 
 // ---------- 状态机与 UI ----------
-let state = 'loading'; // loading → ready → greeting → walking ⇄ paused → finale → finished
+let state = 'loading'; // loading → ready → finale → finished
 let progress = 0;
-let greetTime = 0;
+let hasScrolled = false; // 开始滚动前，人物站在起点面向镜头挥手
 
 // 人物转身后凝望的天空方向（VRM 视线目标）
 const skyGaze = new THREE.Object3D();
@@ -1221,88 +1357,11 @@ const $ = (id) => document.getElementById(id);
 const ui = {
     loading: $('loading'),
     loadingText: $('loading-text'),
-    startScreen: $('start-screen'),
-    startBtn: $('start-btn'),
-    eventCard: $('event-card'),
-    cardMedia: $('card-media'),
-    cardDate: $('card-date'),
-    cardType: $('card-type'),
-    cardTitle: $('card-title'),
-    cardDesc: $('card-desc'),
-    cardCounter: $('card-counter'),
-    continueBtn: $('continue-btn'),
-    endScreen: $('end-screen'),
     restartBtn: $('restart-btn'),
     progressFill: $('progress-fill'),
 };
 
-ui.startBtn.addEventListener('click', () => {
-    ui.startScreen.classList.add('hidden');
-    state = 'greeting';
-    greetTime = 0;
-});
-
-// 收起文章：暂停里面可能正在播放的视频
-function hideCard() {
-    ui.eventCard.classList.add('hidden');
-    for (const v of ui.cardMedia.querySelectorAll('video')) v.pause();
-}
-
-ui.continueBtn.addEventListener('click', () => {
-    hideCard();
-    state = 'walking';
-});
-
-ui.restartBtn.addEventListener('click', () => window.location.reload());
-
-function arriveAt(marker) {
-    state = 'paused';
-    marker.triggered = true;
-    marker.orbMat.opacity = 0.25;
-    marker.haloMat.opacity = 0.15;
-    const ev = marker.event;
-    // 媒体区：像博客一样把照片/视频依次排开；为空时显示虚线占位
-    ui.cardMedia.innerHTML = '';
-    const media = ev.media || [];
-    if (media.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'media-empty';
-        empty.textContent = '照片 / 视频待添加';
-        ui.cardMedia.appendChild(empty);
-    } else {
-        for (const src of media) {
-            if (isVideo(src)) {
-                const v = document.createElement('video');
-                v.src = src;
-                v.controls = true;
-                v.playsInline = true;
-                v.preload = 'metadata';
-                ui.cardMedia.appendChild(v);
-            } else {
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = ev.title || '';
-                img.loading = 'lazy';
-                ui.cardMedia.appendChild(img);
-            }
-        }
-    }
-    ui.cardDate.textContent = ev.label || ev.date || '';
-    const tp = EVENT_TYPES[ev.type];
-    if (tp) {
-        ui.cardType.textContent = tp.label;
-        ui.cardType.style.background = tp.color;
-        ui.cardType.style.display = 'inline-block';
-    } else {
-        ui.cardType.style.display = 'none';
-    }
-    ui.cardTitle.textContent = ev.title || '';
-    ui.cardDesc.textContent = ev.description || '';
-    ui.cardCounter.textContent = `第 ${marker.index + 1} 站 · 共 ${markers.length} 站`;
-    ui.eventCard.classList.remove('hidden');
-    // 每次打开都回到文章开头（上一篇可能读过一半）
-    ui.eventCard.querySelector('.card').scrollTop = 0;
-}
+ui.restartBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 function finish() {
     state = 'finale';
@@ -1319,28 +1378,7 @@ function finish() {
     if (vrm && vrm.lookAt) vrm.lookAt.target = skyGaze;
 }
 
-// ---------- 进度条：可拖动跳转，站点圆点直达 ----------
-function setTriggered(m, flag) {
-    m.triggered = flag;
-    m.orbMat.opacity = flag ? 0.25 : 0.95;
-    m.haloMat.opacity = flag ? 0.15 : 0.55;
-}
-
-// 跳到小路上的任意位置：之前的站标记为已过，之后的站恢复可触发
-function jumpTo(t) {
-    if (state === 'loading' || state === 'ready') return;
-    progress = THREE.MathUtils.clamp(t, 0, 0.99);
-    for (const m of markers) setTriggered(m, m.t < progress);
-    hideCard();
-    ui.endScreen.classList.add('hidden');
-    ui.progressFill.style.width = `${Math.round(progress * 100)}%`;
-    // 从终点演出跳回：天重新亮起来，视线重新看向镜头
-    nightTarget = 0;
-    finale.fireworksStarted = false;
-    if (vrm && vrm.lookAt) vrm.lookAt.target = camera;
-    state = 'walking';
-}
-
+// ---------- 进度条：可拖动跳转（拖动 = 滚动页面），站点圆点直达 ----------
 const progressBar = $('progress');
 markers.forEach((m) => {
     const dot = document.createElement('div');
@@ -1352,11 +1390,10 @@ markers.forEach((m) => {
     dot.addEventListener('pointerdown', (e) => e.stopPropagation());
     dot.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (state === 'loading' || state === 'ready') return;
-        jumpTo(m.t);
-        arriveAt(m);
+        window.scrollTo({ top: anchors[m.index], behavior: 'smooth' });
     });
     progressBar.appendChild(dot);
+    m.dot = dot;
 });
 
 let scrubbing = false;
@@ -1365,12 +1402,11 @@ function barT(e) {
     return THREE.MathUtils.clamp((e.clientX - r.left) / r.width, 0, 1);
 }
 progressBar.addEventListener('pointerdown', (e) => {
-    if (state === 'loading' || state === 'ready') return;
     scrubbing = true;
-    jumpTo(barT(e));
+    window.scrollTo({ top: progressToScroll(barT(e)) }); // 立即跳转，不平滑
 });
 window.addEventListener('pointermove', (e) => {
-    if (scrubbing) jumpTo(barT(e));
+    if (scrubbing) window.scrollTo({ top: progressToScroll(barT(e)) });
 });
 window.addEventListener('pointerup', () => {
     scrubbing = false;
@@ -1384,8 +1420,7 @@ manager.onProgress = (url, loaded, total) => {
 
 loadCharacter(manager).then(() => {
     ui.loading.classList.add('hidden');
-    ui.startScreen.classList.remove('hidden');
-    state = 'ready';
+    state = 'ready'; // 加载完直接露出 intro，滚动即开始
 });
 
 // ---------- 主循环 ----------
@@ -1397,21 +1432,25 @@ function tick() {
     const dt = Math.min(clock.getDelta(), 0.05);
     const time = clock.elapsedTime;
 
-    const walking = state === 'walking';
-    if (walking) {
-        // 动态速度：离下一站越远走得越快（长空档跑步通过），临近 25 米内减速回正常步速
-        const next = markers.find((m) => !m.triggered);
-        const distAhead = ((next ? next.t : 0.995) - progress) * curveLength;
-        moveSpeed = WALK_SPEED + (RUN_SPEED - WALK_SPEED) * THREE.MathUtils.smoothstep(distAhead, 10, 70);
-        progress += (moveSpeed / curveLength) * dt;
-        if (next && progress >= next.t) {
-            progress = next.t;
-            arriveAt(next);
-        } else if (progress >= 0.995) {
-            progress = 0.995;
-            finish();
-        }
-        ui.progressFill.style.width = `${Math.round(progress * 100)}%`;
+    // 滚动即行走：scrollY 分段线性映射到小路进度，progress 快速跟随（只去抖）
+    const scrollY = window.scrollY;
+    if (scrollY > 2) hasScrolled = true;
+    const target = scrollToProgress(scrollY);
+    const prevProgress = progress;
+    progress += (target - progress) * (1 - Math.exp(-18 * dt));
+    const vel = dt > 0 ? (progress - prevProgress) / dt : 0;
+    const moving = Math.abs(vel) > 0.0008;
+    moveSpeed = Math.min(Math.abs(vel) * curveLength, 12);
+    ui.progressFill.style.width = `${Math.round(progress * 100)}%`;
+
+    // 终点演出由滚动触发；往回滑离终点区域则天亮复原
+    if (state === 'ready' && scrollY >= finaleAnchor) {
+        finish();
+    } else if ((state === 'finale' || state === 'finished') && scrollY < finaleAnchor - 40) {
+        state = 'ready';
+        nightTarget = 0;
+        finale.fireworksStarted = false;
+        if (vrm && vrm.lookAt) vrm.lookAt.target = camera;
     }
 
     // 人物位置与朝向
@@ -1420,36 +1459,33 @@ function tick() {
     const tan = curve.getTangentAt(t);
     character.position.x = p.x;
     character.position.z = p.z;
-    if (state === 'greeting') {
-        // 出发前：先平滑转向镜头，举起右手挥一挥，再转身回路上出发
-        greetTime += dt;
-        const tan0 = curve.getTangentAt(0);
-        const pathRy = Math.atan2(tan0.x, tan0.z);
-        const turn = THREE.MathUtils.smoothstep(greetTime, 0, 0.6);
-        const back = THREE.MathUtils.smoothstep(greetTime, 2.4, 3.0);
-        character.rotation.y = lerpAngle(lerpAngle(pathRy, 0, turn), pathRy, back);
-        if (greetTime > 3.0) state = 'walking';
-    } else if (state !== 'finale' && state !== 'finished') {
-        character.rotation.y = Math.atan2(tan.x, tan.z);
+    // 还没滚动过时站在起点面向镜头挥手；走起来以后朝运动方向（往上滑 = 转身朝后走），停顿保持朝向
+    const waving = !hasScrolled && progress < 0.001 && state === 'ready';
+    if (state !== 'finale' && state !== 'finished') {
+        if (waving) {
+            character.rotation.y = 0; // 面向镜头
+        } else if (moving) {
+            const dir = vel > 0 ? 1 : -1;
+            character.rotation.y = Math.atan2(tan.x * dir, tan.z * dir);
+        }
     }
-    animateCharacter(dt, walking, time);
-    if (state === 'greeting' && bones) {
+    animateCharacter(dt, moving, time);
+    if (waving && bones) {
         // 自然的挥手：上臂抬到侧上方（手在头的旁边，不会插进头发），
         // 靠前臂左右摆动打招呼；头轻轻歪一点
-        // （右手垂下是 +z 旋转，举起来就是 -z）
-        const raise = THREE.MathUtils.smoothstep(greetTime, 0.15, 0.75)
-            * (1 - THREE.MathUtils.smoothstep(greetTime, 2.3, 2.9));
         const wave = Math.sin(time * 4.5);
         if (bones.rightUpperArm) {
             bones.rightUpperArm.rotation.x = 0;
-            bones.rightUpperArm.rotation.z = ARM_DOWN * (1 - raise) + (-1.3 + wave * 0.06) * raise;
+            bones.rightUpperArm.rotation.z = -1.3 + wave * 0.06;
         }
         if (bones.rightLowerArm) {
             // 扭转前臂让手掌面向观众，再左右摆动打招呼
-            bones.rightLowerArm.rotation.x = -1.5 * raise;
-            bones.rightLowerArm.rotation.z = ARM_DOWN * 0.25 * (1 - raise) + (-0.35 + wave * 0.4) * raise;
+            bones.rightLowerArm.rotation.x = -1.5;
+            bones.rightLowerArm.rotation.z = -0.35 + wave * 0.4;
         }
-        if (bones.head) bones.head.rotation.z = 0.08 * raise;
+        if (bones.head) bones.head.rotation.z = 0.08;
+    } else if (bones && bones.head) {
+        bones.head.rotation.z = 0;
     }
     if (vrm) vrm.update(dt);
 
@@ -1460,17 +1496,14 @@ function tick() {
         character.rotation.y = lerpAngle(finale.turnFrom, finale.turnTo, k * k * (3 - 2 * k));
         if (finale.time > 1.0) nightTarget = 1;
         if (finale.time > 2.3) finale.fireworksStarted = true;
-        if (finale.time > 5.4) {
-            state = 'finished';
-            ui.endScreen.classList.remove('hidden');
-        }
+        if (finale.time > 5.4) state = 'finished';
     }
     if (state === 'finale' || state === 'finished') {
         skyGaze.position.copy(character.position).addScaledVector(finale.away, 10);
         skyGaze.position.y = 5.5;
     }
 
-    // 昼夜渐变（拖动进度条跳回时会重新天亮）
+    // 昼夜渐变（滑离终点区域时会重新天亮）
     if (night !== nightTarget) {
         night = THREE.MathUtils.clamp(
             night + Math.sign(nightTarget - night) * dt / (nightTarget > night ? 2.8 : 1.2),
@@ -1482,14 +1515,20 @@ function tick() {
         lastAppliedNight = night;
     }
 
-    // 侧视角相机：固定在路的 +z 一侧，平移跟随人物（停顿时视线转向路牌）
+    // 侧视角相机：固定在路的 +z 一侧，平移跟随人物
     let lookGoal;
-    if (state === 'paused') {
-        const m = markers.find((mk) => mk.triggered && mk.t === progress);
-        lookGoal = m ? m.group.position.clone().setY(1.3) : p.clone().add(tan.clone().multiplyScalar(2)).setY(1.4);
-    } else if (state === 'finale' || state === 'finished') {
+    if (state === 'finale' || state === 'finished') {
         // 视线随她转向夜空，入夜后稍微抬高看礼花
         lookGoal = p.clone().addScaledVector(finale.away, 4).setY(1.4 + night * 2.4);
+    } else if (!moving) {
+        // 停顿时若正好在某站旁边，视线转向那个标志
+        let near = null;
+        for (const m of markers) {
+            if (Math.abs(m.t - progress) < 0.004) { near = m; break; }
+        }
+        lookGoal = near
+            ? near.group.position.clone().setY(1.3)
+            : p.clone().add(tan.clone().multiplyScalar(2)).setY(1.4);
     } else {
         lookGoal = p.clone().add(tan.clone().multiplyScalar(2)).setY(1.4);
     }
@@ -1509,9 +1548,22 @@ function tick() {
         if (c.position.x > END_POS.x - 30) c.position.x = -100 - Math.random() * 40;
     }
 
-    // 氛围动画
+    // 氛围动画：雪花；发光球脉冲浮动（走过的站熄灭、不再浮动，圆点变淡）
     updateSnow(dt);
     for (const m of markers) {
+        const trig = progress >= m.t;
+        if (trig !== m.triggered) {
+            m.triggered = trig;
+            m.orbMat.opacity = trig ? 0.25 : 0.95;
+            m.haloMat.opacity = trig ? 0.15 : 0.55;
+            m.dot.classList.toggle('passed', trig);
+            if (trig) {
+                // 触发瞬间可能正处在脉冲中途，复位到静止姿态
+                m.orb.scale.setScalar(1);
+                m.orb.position.y = m.orbY;
+                m.frame.position.y = 0;
+            }
+        }
         if (!m.triggered) {
             const pulse = 1 + 0.18 * Math.sin(time * 2.5 + m.index);
             m.orb.scale.setScalar(pulse);
@@ -1538,4 +1590,5 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     applyViewFit();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    layoutAnchors(); // 视口高度变了，锚点偏移也要重算
 });
