@@ -3,9 +3,31 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { EVENTS, EVENT_TYPES } from './events.js';
 
+// 事件按真实日期比例站在小路上：t = (年内第几天 - 0.5) / 365（2026 非闰年）
+// 1 月 1 日 ≈ 0.0014，12 月 31 日 ≈ 0.9986
+function dateToT(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dayOfYear = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1;
+    return (dayOfYear - 0.5) / 365;
+}
+const MIN_T_GAP = 0.0045; // 相邻标志最小间距（约 1.6 天），防止同一天/连日的标志叠在一起
+const markerTs = (() => {
+    const sorted = EVENTS.map((ev, i) => ({ t: dateToT(ev.date), i })).sort((a, b) => a.t - b.t);
+    let prev = -1;
+    const ts = new Array(EVENTS.length);
+    for (const s of sorted) {
+        const t = Math.max(s.t, prev + MIN_T_GAP);
+        ts[s.i] = t;
+        prev = t;
+    }
+    return ts;
+})();
+
 const ASSETS = './assets';
 const VRM_URL = `${ASSETS}/hazel-pink.vrm`;
-const WALK_SPEED = 2.4; // 米/秒
+const WALK_SPEED = 2.4;  // 米/秒：快到下一站时的正常步速
+const RUN_SPEED = 8.0;   // 米/秒：前后都没有事件的长空档里跑起来
+let moveSpeed = WALK_SPEED;
 const HAZE_COLOR = new THREE.Color(0xcfe6f2); // 远景揉进天空的颜色
 
 // ---------- 渲染器与场景 ----------
@@ -45,7 +67,23 @@ paintSky(0);
 
 // 小 FOV，弱化透视，更接近扁平插画的观感
 const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 400);
-camera.position.set(-6, 3.3, 15.5);
+
+// 竖屏/窄屏适配：拉远相机距离并适度加大 FOV，竖屏时横向也能装下小路和标志
+function viewFit() {
+    const a = window.innerWidth / window.innerHeight;
+    if (a >= 1.25) return { dist: 1, fov: 38 };
+    const k = Math.min(1.25 / a, 2.4);
+    return { dist: Math.pow(k, 0.7), fov: 38 * Math.pow(k, 0.3) };
+}
+let camDist = 1;
+function applyViewFit() {
+    const vf = viewFit();
+    camDist = vf.dist;
+    camera.fov = vf.fov;
+    camera.updateProjectionMatrix();
+}
+applyViewFit();
+camera.position.set(-6, 3.3, 15.5 * camDist);
 
 // 灯光只给 VRM 人物用（场景其余部分都是无光照平涂材质）
 const hemi = new THREE.HemisphereLight(0xffffff, 0x9ab884, 1.25);
@@ -106,7 +144,8 @@ function groundColorAt(month) {
 // 主轴是 +x（屏幕右方），z 方向小幅摆动让路面在侧视角下呈现起伏的"飘带"感
 const curvePoints = [new THREE.Vector3(-6, 0, 0)];
 const SEG_LEN = 20;
-const SEGMENTS = Math.max(14, Math.round(EVENTS.length * 0.75));
+// 路长固定代表一整年：事件站位按真实日期比例，不再依赖事件数量
+const SEGMENTS = 40;
 for (let i = 0; i < SEGMENTS; i++) {
     curvePoints.push(new THREE.Vector3(
         8 + i * SEG_LEN,
@@ -389,12 +428,15 @@ function makeMushroom() {
     return g;
 }
 // 沿路散布。opts.seasons 限定出现的季节；opts.side='far' 只放路的远侧（不挡人物）
+// opts.avoidR：与任一事件标志的水平距离小于此值就丢弃重抽（树不挡标志）
+// opts.maxT：候选 t 超过此值就丢弃重抽（年终路段不撒，终点视野留空）
 function scatter(makeFn, count, minDist, maxDist, scaleRange, opts = {}) {
     let placed = 0;
     let attempts = 0;
     while (placed < count && attempts < count * 25) {
         attempts++;
         const t = Math.random();
+        if (opts.maxT !== undefined && t > opts.maxT) continue;
         const season = seasonAt(t);
         if (opts.seasons && !opts.seasons.includes(season)) continue;
         const p = curve.getPointAt(t);
@@ -404,24 +446,40 @@ function scatter(makeFn, count, minDist, maxDist, scaleRange, opts = {}) {
         if (opts.side === 'far' && side.z * sign > 0) sign = -sign;
         if (opts.side === 'near' && side.z * sign < 0) sign = -sign;
         const dist = minDist + Math.random() * (maxDist - minDist);
+        const x = p.x + side.x * sign * dist;
+        const z = p.z + side.z * sign * dist;
+        if (opts.avoidR !== undefined) {
+            const r2 = opts.avoidR * opts.avoidR;
+            let tooClose = false;
+            for (const mp of markerPts) {
+                const dx = mp.x - x;
+                const dz = mp.z - z;
+                if (dx * dx + dz * dz < r2) { tooClose = true; break; }
+            }
+            if (tooClose) continue;
+        }
         const obj = makeFn(season);
         obj.scale.setScalar(scaleRange[0] + Math.random() * (scaleRange[1] - scaleRange[0]));
-        obj.position.set(p.x + side.x * sign * dist, 0, p.z + side.z * sign * dist);
+        obj.position.set(x, 0, z);
         scene.add(obj);
         billboards.push(obj);
         placed++;
     }
 }
 
+// 事件标志的位置（x/z 平面），撒树时避开它们
+const markerPts = markerTs.map((t) => curve.getPointAt(t));
+
 // 树大多放在路的远侧；近侧放少量稀疏的树，偶尔从镜头前掠过（增加前景层次）
 // 近 / 中 / 远三档：越远越大片、越揉进天空色，形成层次
-scatter((s) => makeTree(s, 0), 60, 4.2, 10, [1.0, 1.7], { side: 'far' });
+scatter((s) => makeTree(s, 0), 60, 4.2, 10, [1.0, 1.7], { side: 'far', avoidR: 3.2 });
 scatter((s) => makeTree(s, 0.35), 70, 10, 22, [1.3, 2.2], { side: 'far' });
 scatter((s) => makeTree(s, 0.6), 80, 20, 48, [1.8, 3.0], { side: 'far' });
 // 前景树两档：一档偶尔掠过画面一角；一档更靠近镜头、个头更矮，
 // 在画面里只露下缘（近大远小，越近越靠下），丰富前景但不挡路上的人
-scatter((s) => makeTree(s, 0), 22, 4.5, 9, [0.7, 1.15], { side: 'near' });
-scatter((s) => makeTree(s, 0), 30, 9, 13.5, [0.65, 1.0], { side: 'near' });
+// maxT 0.86：年终路段（约 11 月中之后）的近侧不撒树，终点演出视野干净
+scatter((s) => makeTree(s, 0), 22, 4.5, 9, [0.7, 1.15], { side: 'near', avoidR: 5, maxT: 0.86 });
+scatter((s) => makeTree(s, 0), 30, 9, 13.5, [0.65, 1.0], { side: 'near', avoidR: 4, maxT: 0.86 });
 scatter(makeGrassTuft, 220, 2.6, 10, [0.7, 1.4], { seasons: ['spring', 'summer', 'autumn'] });
 scatter(makeGrassTuft, 170, 2.5, 14, [0.8, 1.6], { seasons: ['spring', 'summer', 'autumn'], side: 'near' });
 scatter(makeFlower, 90, 2.6, 7, [0.8, 1.3], { seasons: ['spring', 'summer'] });
@@ -712,8 +770,10 @@ let walkPhase = 0;
 
 function animateCharacter(dt, walking, time) {
     if (bones) {
-        walkPhase += dt * (walking ? 7 : 2);
-        const amp = walking ? 1 : 0;
+        // 步频和摆腿幅度跟着速度走：空档里跑起来时步子更快更大
+        const runK = walking ? (moveSpeed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED) : 0;
+        walkPhase += dt * (walking ? 4.5 + moveSpeed * 1.15 : 2);
+        const amp = walking ? 1 + runK * 0.35 : 0;
         const s = Math.sin(walkPhase);
         const set = (name, x, z) => {
             if (!bones[name]) return;
@@ -724,13 +784,14 @@ function animateCharacter(dt, walking, time) {
         set('rightUpperLeg', -s * 0.55 * amp, null);
         set('leftLowerLeg', Math.max(0, -s) * 0.8 * amp, null);
         set('rightLowerLeg', Math.max(0, s) * 0.8 * amp, null);
-        // 大臂：先垂下来（z），再前后摆（x）
-        set('leftUpperArm', -s * ARM_SWING * amp, -ARM_DOWN);
-        set('rightUpperArm', s * ARM_SWING * amp, ARM_DOWN);
+        // 大臂：先垂下来（z），再前后摆（x）；跑起来时摆臂更开
+        set('leftUpperArm', -s * (ARM_SWING + runK * 0.3) * amp, -ARM_DOWN);
+        set('rightUpperArm', s * (ARM_SWING + runK * 0.3) * amp, ARM_DOWN);
         // 小臂：跟着垂下，略微向前弯一点
         set('leftLowerArm', null, -ARM_DOWN * 0.25);
         set('rightLowerArm', null, ARM_DOWN * 0.25);
-        set('spine', walking ? 0.05 : Math.sin(time * 1.4) * 0.02, null);
+        // 跑起来时身体前倾一点
+        set('spine', walking ? 0.05 + runK * 0.14 : Math.sin(time * 1.4) * 0.02, null);
         if (bones.hips) bones.hips.rotation.y = s * 0.05 * amp;
     }
     const bob = walking ? Math.abs(Math.sin(walkPhase)) * 0.05 : 0;
@@ -897,7 +958,7 @@ function buildProp(type, photoMat) {
             topY = 1.75;
             break;
         }
-        case 'show': { // 展览/演出：剧院红幕，照片是舞台
+        case 'show': { // 演出：剧院红幕，照片是舞台
             // 舞台台面
             g.add(part(roundedRectGeo(2.4, 0.22, 0.1), 0x8a5a30, 0, 0.28));
             // 舞台背景（照片）
@@ -915,6 +976,63 @@ function buildProp(type, photoMat) {
             topY = 2.7;
             break;
         }
+        case 'exhibition': { // 展览：圆形金色画框，照片圆片嵌在框里
+            // 框底下的两只小脚
+            g.add(part(roundedRectGeo(0.46, 0.2, 0.09), 0x8a6a2a, -0.52, 0.12));
+            g.add(part(roundedRectGeo(0.46, 0.2, 0.09), 0x8a6a2a, 0.52, 0.12));
+            // 外层金色大圆 + 内圈深色细边
+            g.add(part(CIRC(1.05), 0xd8a23c, 0, 1.38));
+            g.add(part(CIRC(0.88), 0x8a6a2a, 0, 1.38, 0.005));
+            // 圆形照片：白边圆 + 照片圆片（addPhoto 是方照片，这里手写圆的）
+            g.add(part(CIRC(0.8), 0xfffaf0, 0, 1.38, 0.01));
+            const ph = new THREE.Mesh(new THREE.CircleGeometry(0.72, 32), photoMat);
+            ph.position.set(0, 1.38, 0.02);
+            g.add(ph);
+            // 顶部小圆球装饰
+            g.add(part(CIRC(0.16), 0xd8a23c, 0, 2.55, 0.005));
+            topY = 2.6;
+            break;
+        }
+        case 'game': { // 游戏：圆滚滚掌机，照片是屏幕
+            // 两端大圆手柄（左蓝右红）
+            g.add(part(CIRC(0.55), 0x5a8fd0, -0.82, 0.85));
+            g.add(part(CIRC(0.55), 0xe05d5d, 0.82, 0.85));
+            // 圆角矩形机身
+            g.add(part(roundedRectGeo(1.5, 0.95, 0.42), 0x4a5560, 0, 0.85, 0.005));
+            // 手柄上的小圆按键
+            g.add(part(CIRC(0.09), 0xfffaf0, -0.92, 0.98, 0.01));
+            g.add(part(CIRC(0.07), 0xfffaf0, -0.7, 0.76, 0.01));
+            g.add(part(CIRC(0.07), 0xfffaf0, 0.7, 0.96, 0.01));
+            g.add(part(CIRC(0.09), 0xfffaf0, 0.92, 0.76, 0.01));
+            // 中央屏幕（照片）
+            addPhoto(g, photoMat, 0.86, 0.64, 0, 0.85, 0, 0.07);
+            topY = 2.2;
+            break;
+        }
+        case 'party': { // 朋友聚会：圆火锅，照片是挂在锅身上的小圆牌
+            // 两缕蒸汽（细长的圆角条，微微倾斜）
+            g.add(part(roundedRectGeo(0.12, 0.55, 0.06), 0xf6f1e2, -0.26, 2.16, 0, -0.14));
+            g.add(part(roundedRectGeo(0.12, 0.45, 0.06), 0xf6f1e2, 0.24, 2.12, 0, 0.16));
+            // 两侧小圆耳朵把手
+            g.add(part(CIRC(0.2), 0xb03a2e, -0.92, 1.0));
+            g.add(part(CIRC(0.2), 0xb03a2e, 0.92, 1.0));
+            // 番茄红大圆锅身
+            g.add(part(CIRC(0.85), 0xe05a3a, 0, 1.0, 0.005));
+            // 奶油色汤底（锅口偏上半部分，像微微俯视）
+            g.add(part(CIRC(0.6), 0xfff0d0, 0, 1.14, 0.01));
+            // 汤上的小圆食材（绿/白/橙）
+            g.add(part(CIRC(0.11), 0x7cc46a, -0.24, 1.3, 0.015));
+            g.add(part(CIRC(0.09), 0xffffff, 0.2, 1.32, 0.015));
+            g.add(part(CIRC(0.1), 0xf2a03c, 0.02, 1.04, 0.015));
+            g.add(part(CIRC(0.07), 0x7cc46a, 0.32, 1.12, 0.015));
+            // 挂在锅身中下方的小圆牌照片：白边圆 + 圆照片
+            g.add(part(CIRC(0.42), 0xfffaf0, 0, 0.5, 0.02));
+            const ph = new THREE.Mesh(new THREE.CircleGeometry(0.34, 32), photoMat);
+            ph.position.set(0, 0.5, 0.03);
+            g.add(ph);
+            topY = 2.2;
+            break;
+        }
         default: { // 默认：木杆路牌
             g.add(part(new THREE.CylinderGeometry(0.05, 0.06, 1.6, 6), 0x8a6a4a, 0, 0.8));
             addPhoto(g, photoMat, 1.76, 1.28, 0, 2.0, 0, 0.12);
@@ -925,13 +1043,16 @@ function buildProp(type, photoMat) {
     return { group: g, topY };
 }
 
+const isVideo = (src) => /\.(mp4|webm|mov|m4v)$/i.test(src);
+
 const markers = [];
 EVENTS.forEach((ev, i) => {
-    const t = (i + 1) / (EVENTS.length + 1);
+    const t = markerTs[i]; // 按真实日期比例站位（已按最小间距错开）
     const p = curve.getPointAt(t);
     const side = sideVectorAt(t);
     if (side.z > 0) side.negate(); // 标志放在路的远侧，面向相机
-    const pos = p.clone().add(side.multiplyScalar(2.2));
+    const dist = 2.2 + (i % 2) * 1.15; // 左右远近交替错落，密集段减少重叠
+    const pos = p.clone().add(side.multiplyScalar(dist));
 
     const group = new THREE.Group();
     group.position.copy(pos);
@@ -958,9 +1079,10 @@ EVENTS.forEach((ev, i) => {
     halo.position.y = prop.topY;
     group.add(halo);
 
-    // 有真实照片时替换贴图
-    if (ev.photo) {
-        new THREE.TextureLoader().load(ev.photo, (tex) => {
+    // 有真实照片时替换贴图（用 media 里的第一张图片，视频跳过）
+    const firstImg = (ev.media || []).find((src) => !isVideo(src));
+    if (firstImg) {
+        new THREE.TextureLoader().load(firstImg, (tex) => {
             tex.colorSpace = THREE.SRGBColorSpace;
             photoMat.map = tex;
             photoMat.needsUpdate = true;
@@ -1102,8 +1224,7 @@ const ui = {
     startScreen: $('start-screen'),
     startBtn: $('start-btn'),
     eventCard: $('event-card'),
-    cardPhoto: $('card-photo'),
-    cardPlaceholder: $('card-photo-placeholder'),
+    cardMedia: $('card-media'),
     cardDate: $('card-date'),
     cardType: $('card-type'),
     cardTitle: $('card-title'),
@@ -1121,8 +1242,14 @@ ui.startBtn.addEventListener('click', () => {
     greetTime = 0;
 });
 
-ui.continueBtn.addEventListener('click', () => {
+// 收起文章：暂停里面可能正在播放的视频
+function hideCard() {
     ui.eventCard.classList.add('hidden');
+    for (const v of ui.cardMedia.querySelectorAll('video')) v.pause();
+}
+
+ui.continueBtn.addEventListener('click', () => {
+    hideCard();
     state = 'walking';
 });
 
@@ -1134,15 +1261,33 @@ function arriveAt(marker) {
     marker.orbMat.opacity = 0.25;
     marker.haloMat.opacity = 0.15;
     const ev = marker.event;
-    if (ev.photo) {
-        ui.cardPhoto.src = ev.photo;
-        ui.cardPhoto.style.display = 'block';
-        ui.cardPlaceholder.style.display = 'none';
+    // 媒体区：像博客一样把照片/视频依次排开；为空时显示虚线占位
+    ui.cardMedia.innerHTML = '';
+    const media = ev.media || [];
+    if (media.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'media-empty';
+        empty.textContent = '照片 / 视频待添加';
+        ui.cardMedia.appendChild(empty);
     } else {
-        ui.cardPhoto.style.display = 'none';
-        ui.cardPlaceholder.style.display = 'flex';
+        for (const src of media) {
+            if (isVideo(src)) {
+                const v = document.createElement('video');
+                v.src = src;
+                v.controls = true;
+                v.playsInline = true;
+                v.preload = 'metadata';
+                ui.cardMedia.appendChild(v);
+            } else {
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = ev.title || '';
+                img.loading = 'lazy';
+                ui.cardMedia.appendChild(img);
+            }
+        }
     }
-    ui.cardDate.textContent = ev.date || '';
+    ui.cardDate.textContent = ev.label || ev.date || '';
     const tp = EVENT_TYPES[ev.type];
     if (tp) {
         ui.cardType.textContent = tp.label;
@@ -1155,6 +1300,8 @@ function arriveAt(marker) {
     ui.cardDesc.textContent = ev.description || '';
     ui.cardCounter.textContent = `第 ${marker.index + 1} 站 · 共 ${markers.length} 站`;
     ui.eventCard.classList.remove('hidden');
+    // 每次打开都回到文章开头（上一篇可能读过一半）
+    ui.eventCard.querySelector('.card').scrollTop = 0;
 }
 
 function finish() {
@@ -1184,7 +1331,7 @@ function jumpTo(t) {
     if (state === 'loading' || state === 'ready') return;
     progress = THREE.MathUtils.clamp(t, 0, 0.99);
     for (const m of markers) setTriggered(m, m.t < progress);
-    ui.eventCard.classList.add('hidden');
+    hideCard();
     ui.endScreen.classList.add('hidden');
     ui.progressFill.style.width = `${Math.round(progress * 100)}%`;
     // 从终点演出跳回：天重新亮起来，视线重新看向镜头
@@ -1199,7 +1346,7 @@ markers.forEach((m) => {
     const dot = document.createElement('div');
     dot.className = 'progress-dot';
     dot.style.left = `${m.t * 100}%`;
-    dot.dataset.title = `${m.event.date || ''} ${m.event.title || ''}`.trim(); // 悬停气泡里显示
+    dot.dataset.title = `${m.event.label || m.event.date || ''} ${m.event.title || ''}`.trim(); // 悬停气泡里显示
     const tp = EVENT_TYPES[m.event.type];
     if (tp) dot.style.borderColor = tp.color;
     dot.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -1252,8 +1399,11 @@ function tick() {
 
     const walking = state === 'walking';
     if (walking) {
-        progress += (WALK_SPEED / curveLength) * dt;
+        // 动态速度：离下一站越远走得越快（长空档跑步通过），临近 25 米内减速回正常步速
         const next = markers.find((m) => !m.triggered);
+        const distAhead = ((next ? next.t : 0.995) - progress) * curveLength;
+        moveSpeed = WALK_SPEED + (RUN_SPEED - WALK_SPEED) * THREE.MathUtils.smoothstep(distAhead, 10, 70);
+        progress += (moveSpeed / curveLength) * dt;
         if (next && progress >= next.t) {
             progress = next.t;
             arriveAt(next);
@@ -1344,7 +1494,7 @@ function tick() {
         lookGoal = p.clone().add(tan.clone().multiplyScalar(2)).setY(1.4);
     }
     const camGoal = p.clone()
-        .add(new THREE.Vector3(0, 3.3 + Math.sin(time * 0.7) * 0.08, 15.5));
+        .add(new THREE.Vector3(0, 3.3 + (camDist - 1) * 2.2 + Math.sin(time * 0.7) * 0.08, 15.5 * camDist));
     const k = 1 - Math.exp(-3 * dt);
     camera.position.lerp(camGoal, k);
     camTarget.lerp(lookGoal, k);
@@ -1386,6 +1536,6 @@ tick();
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    applyViewFit();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });

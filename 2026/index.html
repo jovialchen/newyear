@@ -32,20 +32,21 @@
         <button id="start-btn" class="big-btn">开始旅程</button>
     </div>
 
-    <!-- 事件卡片 -->
+    <!-- 事件文章：像一篇博客，整篇自然滚动，照片/视频依次排开 -->
     <div id="event-card" class="hidden">
-        <div class="card">
-            <div id="card-photo-wrap">
-                <img id="card-photo" alt="">
-                <div id="card-photo-placeholder">📷</div>
-            </div>
-            <p id="card-date"></p>
-            <span id="card-type"></span>
-            <h2 id="card-title"></h2>
+        <article class="card">
+            <header class="card-head">
+                <p id="card-date"></p>
+                <span id="card-type"></span>
+                <h2 id="card-title"></h2>
+            </header>
             <p id="card-desc"></p>
-            <button id="continue-btn" class="big-btn">继续往前走 →</button>
-            <p id="card-counter"></p>
-        </div>
+            <div id="card-media"></div>
+            <footer class="card-foot">
+                <button id="continue-btn" class="big-btn">继续往前走 →</button>
+                <p id="card-counter"></p>
+            </footer>
+        </article>
     </div>
 
     <!-- 终点画面：不罩幕布（会挡住礼花），只留下一个按钮 -->

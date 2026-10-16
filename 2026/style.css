@@ -109,35 +109,45 @@ canvas {
     transform: scale(0.97);
 }
 
-/* ---------- 事件卡片 ---------- */
+/* ---------- 事件文章（博客式：整篇自然滚动，媒体依次排开） ---------- */
 #event-card {
     position: fixed;
     inset: 0;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding: 3vh 1rem;
     z-index: 15;
-    pointer-events: none;
+    background: rgba(24, 38, 32, 0.38);
+    backdrop-filter: blur(2px);
 }
 
 .card {
-    pointer-events: auto;
-    width: min(430px, 94vw);
-    max-height: 78vh;
+    width: min(680px, 96vw);
+    max-height: 92vh;
     overflow-y: auto;
-    background: rgba(255, 252, 246, 0.97);
-    border-radius: 18px;
-    padding: 1.1rem 1.3rem 1.3rem;
+    overscroll-behavior: contain;
+    background: rgba(255, 252, 246, 0.98);
+    border-radius: 20px;
+    padding: 1.7rem 1.9rem 1.4rem;
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
-    text-align: center;
+    text-align: left;
     animation: card-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* 细而淡的滚动条，不抢戏 */
+.card::-webkit-scrollbar {
+    width: 6px;
+}
+.card::-webkit-scrollbar-thumb {
+    background: rgba(160, 128, 80, 0.35);
+    border-radius: 999px;
 }
 
 @keyframes card-in {
     from {
         opacity: 0;
-        transform: translateY(46px) scale(0.92);
+        transform: translateY(46px) scale(0.96);
     }
     to {
         opacity: 1;
@@ -145,38 +155,19 @@ canvas {
     }
 }
 
-#card-photo-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    border-radius: 12px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #a8c8a8, #7ba889);
-    margin-bottom: 0.8rem;
-}
-
-#card-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-}
-
-#card-photo-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: rgba(255, 255, 255, 0.75);
+/* 文章头：日期 + 类型标签同行，标题像博客标题 */
+.card-head {
+    border-bottom: 1px solid #ece2cf;
+    padding-bottom: 0.9rem;
+    margin-bottom: 1.1rem;
 }
 
 #card-date {
+    display: inline-block;
     font-size: 0.85rem;
     color: #a08050;
     letter-spacing: 0.12em;
-    margin-bottom: 0.4rem;
+    margin-right: 0.7rem;
 }
 
 #card-type {
@@ -186,21 +177,63 @@ canvas {
     padding: 0.18rem 0.7rem;
     border-radius: 999px;
     letter-spacing: 0.1em;
-    margin-bottom: 0.45rem;
+    vertical-align: 0.1em;
 }
 
 #card-title {
-    font-size: 1.35rem;
+    font-size: 1.55rem;
+    line-height: 1.45;
     color: #3c3226;
-    margin-bottom: 0.55rem;
+    margin-top: 0.5rem;
 }
 
+/* 正文：宽松行距，读长文不累 */
 #card-desc {
-    font-size: 0.98rem;
-    line-height: 1.75;
-    color: #5a5148;
-    margin-bottom: 1rem;
+    font-size: 1.02rem;
+    line-height: 1.95;
+    color: #544b40;
+    margin-bottom: 1.3rem;
     white-space: pre-wrap;
+}
+
+/* 媒体流：照片/视频全宽依次排开，像博客插图 */
+#card-media {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1.4rem;
+}
+
+#card-media img,
+#card-media video {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(60, 50, 38, 0.18);
+    background: #e8e0d0;
+}
+
+#card-media:empty {
+    display: none;
+    margin: 0;
+}
+
+/* 没有媒体时的虚线占位 */
+.media-empty {
+    border: 2px dashed #d8cbb0;
+    border-radius: 12px;
+    color: #b0a48e;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+/* 文章脚：按钮居中 */
+.card-foot {
+    text-align: center;
+    border-top: 1px solid #ece2cf;
+    padding-top: 1.1rem;
 }
 
 #card-counter {
@@ -251,11 +284,11 @@ canvas {
 .progress-dot {
     position: absolute;
     top: 50%;
-    width: 15px;
-    height: 15px;
+    width: 11px;
+    height: 11px;
     border-radius: 50%;
     background: #fff;
-    border: 3px solid #ffb347;
+    border: 2.5px solid #ffb347;
     transform: translate(-50%, -50%);
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
@@ -302,4 +335,42 @@ canvas {
 .progress-dot:hover::before {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+/* 触屏没有 hover：圆点的悬停气泡直接不显示 */
+@media (hover: none) {
+    .progress-dot::after,
+    .progress-dot::before {
+        display: none;
+    }
+}
+
+/* 窄屏/手机：圆点更密更小；文章变成从底部升起的整页 */
+@media (max-width: 640px) {
+    .progress-dot {
+        width: 8px;
+        height: 8px;
+        border-width: 2px;
+    }
+
+    #event-card {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .card {
+        width: 100%;
+        max-height: 94vh;
+        border-radius: 20px 20px 0 0;
+        padding: 1.2rem 1.15rem 1.1rem;
+    }
+
+    #card-title {
+        font-size: 1.3rem;
+    }
+
+    #card-desc {
+        font-size: 0.97rem;
+        line-height: 1.85;
+    }
 }
