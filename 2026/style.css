@@ -167,13 +167,122 @@ canvas {
     margin-top: 0.5rem;
 }
 
-/* 正文：宽松行距，读长文不累 */
+/* 正文：宽松行距，读长文不累；默认折叠成开头几行（小卡 2 行 / featured 大卡 4 行） */
 .card-desc {
     font-size: 1.02rem;
     line-height: 1.95;
     color: #544b40;
     margin-bottom: 1.3rem;
     white-space: pre-wrap;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.card.featured .card-desc {
+    -webkit-line-clamp: 4;
+}
+
+.card.expanded .card-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+/* 金句：折叠态替代正文，展开后隐藏 */
+.card-quote {
+    font-size: 1.02rem;
+    line-height: 1.85;
+    color: #6b5a3e;
+    border-left: 3px solid #e3c98f;
+    padding-left: 0.8rem;
+    margin-bottom: 1.2rem;
+    white-space: pre-wrap;
+}
+
+.card.expanded .card-quote {
+    display: none;
+}
+
+.card.has-quote:not(.expanded) .card-desc {
+    display: none;
+}
+
+/* 展开 / 收起按钮 */
+.card-toggle {
+    display: inline-block;
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: #a08050;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: -0.5rem 0 1.2rem;
+    cursor: pointer;
+}
+
+.card-toggle:hover {
+    color: #7d5f33;
+    text-decoration: underline;
+}
+
+/* featured 大卡的「年度时刻」小标记 */
+.card-featured-chip {
+    font-size: 0.75rem;
+    color: #b8892e;
+    letter-spacing: 0.12em;
+    vertical-align: 0.1em;
+}
+
+/* 紧凑小卡（非 featured）：折叠态只是一块里程碑——比大卡窄，
+   只有日期 / 类型 / 标题，正文和照片都收进展开态，整张可点开 */
+.event-article:not(.featured) {
+    width: min(560px, 92vw);
+    padding: 0.95rem 1.4rem 0.9rem;
+}
+
+.event-article:not(.featured):not(.expanded) {
+    cursor: pointer;
+}
+
+.event-article:not(.featured) .card-head {
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.7rem;
+}
+
+/* 折叠的小卡头部下面什么都没有，去掉分隔线和间距 */
+.event-article:not(.featured):not(.expanded) .card-head {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.event-article:not(.featured) .card-title {
+    font-size: 1.18rem;
+}
+
+.event-article:not(.featured) .card-desc {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    margin-bottom: 0.8rem;
+}
+
+.card:not(.featured):not(.expanded) .card-desc,
+.card:not(.featured):not(.expanded) .card-media {
+    display: none;
+}
+
+/* 折叠小卡的展开按钮紧跟标题，不用留出正文的间距 */
+.event-article:not(.featured):not(.expanded) .card-toggle {
+    margin: 0.5rem 0 0;
+}
+
+@media (max-width: 640px) {
+    .event-article:not(.featured) {
+        padding: 0.85rem 1.05rem 0.8rem;
+    }
 }
 
 /* 媒体流：照片/视频全宽依次排开，像博客插图 */

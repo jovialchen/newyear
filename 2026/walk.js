@@ -940,6 +940,8 @@ const articles = [];
 
         const article = document.createElement('article');
         article.className = 'event-article card';
+        if (ev.featured) article.classList.add('featured');
+        if (ev.quote) article.classList.add('has-quote');
 
         const head = document.createElement('header');
         head.className = 'card-head';
@@ -955,21 +957,61 @@ const articles = [];
             chip.style.background = tp.color;
             head.appendChild(chip);
         }
+        if (ev.featured) {
+            const star = document.createElement('span');
+            star.className = 'card-featured-chip';
+            star.textContent = '⭐ 年度时刻';
+            head.appendChild(star);
+        }
         const titleEl = document.createElement('h2');
         titleEl.className = 'card-title';
         titleEl.textContent = ev.title || '';
         head.appendChild(titleEl);
         article.appendChild(head);
 
+        // 有金句时，折叠态只显示金句；展开后金句让位给全文
+        if (ev.quote) {
+            const quote = document.createElement('p');
+            quote.className = 'card-quote';
+            quote.textContent = ev.quote;
+            article.appendChild(quote);
+        }
+
         const desc = document.createElement('p');
         desc.className = 'card-desc';
         desc.textContent = ev.description || '';
         article.appendChild(desc);
 
+        const media = ev.media || [];
+
+        // 长文折叠：featured 大卡默认 4 行（有金句先显示金句），正文够长才给按钮；
+        // 紧凑小卡折叠态只留里程碑（日期/类型/标题），只要有正文或照片就可展开
+        const descLen = (ev.description || '').length;
+        const needToggle = ev.featured
+            ? (!!ev.quote || descLen > 150)
+            : (descLen > 0 || media.length > 0);
+        if (needToggle) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'card-toggle';
+            btn.textContent = '展开全文 ↓';
+            btn.addEventListener('click', () => {
+                const open = article.classList.toggle('expanded');
+                btn.textContent = open ? '收起 ↑' : '展开全文 ↓';
+            });
+            article.appendChild(btn);
+            // 小卡折叠态整张可点（点头部位区域就展开），按钮本身除外
+            article.addEventListener('click', (e) => {
+                if (ev.featured || article.classList.contains('expanded')) return;
+                if (e.target.closest('.card-toggle')) return;
+                article.classList.add('expanded');
+                btn.textContent = '收起 ↑';
+            });
+        }
+
         // 媒体区：照片/视频依次排开；为空时放虚线占位
         const mediaEl = document.createElement('div');
         mediaEl.className = 'card-media';
-        const media = ev.media || [];
         if (media.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'media-empty';
